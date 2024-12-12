@@ -1,4 +1,5 @@
 defmodule NextDoorWeb.Router do
+  
   use NextDoorWeb, :router
 
   pipeline :api do
@@ -7,6 +8,12 @@ defmodule NextDoorWeb.Router do
 
   scope "/api", NextDoorWeb do
     pipe_through :api
+	scope "/account" do
+	  post "/register",AccountController , :register
+	end
+	
+	# post "/store/register"
+	
   end
 
   # Enable Swoosh mailbox preview in development

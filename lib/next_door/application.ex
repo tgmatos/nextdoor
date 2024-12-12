@@ -2,7 +2,7 @@ defmodule NextDoor.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
-
+  
   use Application
 
   @impl true
@@ -18,8 +18,8 @@ defmodule NextDoor.Application do
       # {NextDoor.Worker, arg},
       # Start to serve requests, typically the last entry
       NextDoorWeb.Endpoint
-    ]
-
+	]
+		
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: NextDoor.Supervisor]
