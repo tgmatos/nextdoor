@@ -12,6 +12,7 @@ defmodule NextDoor.Application do
       NextDoor.Repo,
       {DNSCluster, query: Application.get_env(:next_door, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: NextDoor.PubSub},
+	  {Cachex, name: :nd_cache},
       # Start the Finch HTTP client for sending emails
       {Finch, name: NextDoor.Finch},
       # Start a worker by calling: NextDoor.Worker.start_link(arg)
