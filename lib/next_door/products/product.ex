@@ -1,7 +1,7 @@
 defmodule NextDoor.Product do
   use Ecto.Schema
   import Ecto.Changeset
-  alias NextDoor.Inventory
+  alias NextDoor.Store
 
   @primary_key{:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -10,13 +10,21 @@ defmodule NextDoor.Product do
 	field :name, :string
 	field :quantity, :integer
 	field :description, :string
-	belongs_to :inventory, Inventory, foreign_key: :inventory_id
+	belongs_to :store, Store, foreign_key: :store_id
+	timestamps()
   end
 
   def new_product_changeset(product, params \\ %{}) do
 	product
 	|> cast(params, [:name, :quantity, :description])
 	|> validate_required([:name, :quantity, :description, :inventory_id])
-	|> foreign_key_constraint(:inventory_id)
+	|> foreign_key_constraint(:store_id)
+  end
+
+  # TODO: Validate if the quantity is < 0
+  def update_product_changeset(product, params \\ %{}) do
+	product
+	|> cast(params, [:name, :quantity, :description])
+	|> foreign_key_constraint(:store_id)
   end
 end

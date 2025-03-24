@@ -1,19 +1,32 @@
 defmodule NextDoorWeb.Router do
-  
   use NextDoorWeb, :router
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
+  pipeline :auth do
+	plug NextDoorWeb.AuthenticationPipeline
+  end
+
+  # Unauthenticated routes
   scope "/api", NextDoorWeb do
     pipe_through :api
 	scope "/account" do
-	  post "/register",AccountController , :register
+	  post "/register", AccountController, :register
+	  post "/login", AccountController, :login
 	end
-	
-	# post "/store/register"
-	
+
+	resources "/store", StoreController, only: [:index, :show]
+  end
+
+  # Authenticated routes
+  scope "/api", NextDoorWeb do
+    pipe_through [:api, :auth]
+	resources "/account", AccountController, only: [:show, :update, :delete], singleton: true
+	resources "/store", StoreController, only: [:create, :update, :delete, :show], singleton: true do
+	  resources "/product", ProductController, only: [:create, :update, :delete]
+	end
   end
 
   # Enable Swoosh mailbox preview in development

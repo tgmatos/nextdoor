@@ -36,6 +36,7 @@ defmodule NextDoor.MixProject do
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
 	  {:ecto_commons, "~> 0.3.6"},
+	  {:ecto_sqlite3, "~> 0.17"},
 	  {:postgrex, ">= 0.0.0"},
       {:swoosh, "~> 1.5"},
       {:finch, "~> 0.13"},
@@ -45,7 +46,8 @@ defmodule NextDoor.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
 	  {:guardian, "~> 2.3"},
-	  {:argon2_elixir, "~> 4.1"}
+	  {:argon2_elixir, "~> 4.1"},
+	  {:cachex, "~> 4.0"}
     ]
   end
 
