@@ -39,6 +39,10 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :next_door, NextDoor.AccountManager,
+	   issuer: "NextDoor",
+	   secret_key: "804dphpqK1nN0wNAnBx+V/iQcLeabgBlxNlyMz8MXIplGzYn3OUj7Gd8mw4vdLkS"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
