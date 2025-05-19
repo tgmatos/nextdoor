@@ -18,9 +18,9 @@ defmodule NextDoorWeb.StoreController do
   end
 
   def show(conn, %{"id" => id}) do
-	with {:ok, id} <- Stores.show(id) do
-	  render(conn, :show, %{store: id})
-	end
+    with {:ok, id} <- Stores.show(id) do
+      render(conn, :show, %{store: id})
+    end
   end
 
   def show(conn, _params) do

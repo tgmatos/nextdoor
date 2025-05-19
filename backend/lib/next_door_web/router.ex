@@ -1,12 +1,13 @@
 defmodule NextDoorWeb.Router do
   use NextDoorWeb, :router
+  import Phoenix.LiveDashboard.Router
 
   pipeline :api do
     plug :accepts, ["json"]
   end
-
+  
   pipeline :auth do
-	plug NextDoorWeb.AuthenticationPipeline
+    plug NextDoorWeb.AuthenticationPipeline
   end
 
   # Unauthenticated routes
@@ -17,7 +18,7 @@ defmodule NextDoorWeb.Router do
 	  post "/login", AccountController, :login
 	end
 
-	resources "/store", StoreController, only: [:index, :show]
+	resources "/stores", StoreController, only: [:index, :show]
   end
 
   # Authenticated routes
@@ -25,12 +26,16 @@ defmodule NextDoorWeb.Router do
     pipe_through [:api, :auth]
 	resources "/account", AccountController, only: [:show, :update, :delete], singleton: true
 	resources "/store", StoreController, only: [:create, :update, :delete, :show], singleton: true do
-	  resources "/product", ProductController, only: [:create, :update, :delete]
+	  resources "/product", ProductController, only: [:create, :update, :delete, :index]
 	end
   end
 
   # Enable Swoosh mailbox preview in development
   if Application.compile_env(:next_door, :dev_routes) do
+    scope "/" do
+      #pipe_through :browser
+      live_dashboard "/dashboard", metrics: NextDoorWeb.Telemetry
+    end
 
     scope "/dev" do
       pipe_through [:fetch_session, :protect_from_forgery]

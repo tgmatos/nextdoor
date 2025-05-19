@@ -18,21 +18,21 @@ defmodule NextDoor.Stores do
   end
 
   def show(%{owner_id: owner_id}) do
-	case Cache.get(Store, %{owner_id: owner_id}) do
+	case Cache.get_by(Store, %{owner_id: owner_id}) do
 	  {:ok, record} -> {:ok, record}
 	  {:error, :record_not_found} -> {:error, :store_not_found}
 	end
   end
 
   def show(id) do
-	case Cache.get(Store, id) do
+	case Cache.get_by_id(Store, id) do
 	  {:ok, record} -> {:ok, record}
 	  {:error, :record_not_found} -> {:error, :store_not_found}
 	end
   end
     
   def update(record, owner_id) do
-	case Cache.get(Store, %{owner_id: owner_id}) do
+	case Cache.get_by(Store, %{owner_id: owner_id}) do
 	  {:ok, store} ->
 		Store.update_store_changeset(store, record)
 		|> Repo.update()

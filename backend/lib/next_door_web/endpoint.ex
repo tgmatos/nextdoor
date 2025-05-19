@@ -11,7 +11,10 @@ defmodule NextDoorWeb.Endpoint do
     same_site: "Lax"
   ]
 
-  # socket "/live", Phoenix.LiveView.Socket,
+  socket "/live", Phoenix.LiveView.Socket
+  plug Phoenix.LiveDashboard.RequestLogger,
+       param_key: "request_logger",
+       cookie_key: "request_logger"
   #   websocket: [connect_info: [session: @session_options]],
   #   longpoll: [connect_info: [session: @session_options]]
 
