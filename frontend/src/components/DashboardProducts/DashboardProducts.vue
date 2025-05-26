@@ -10,6 +10,7 @@ type Product = {
   id: string,
   name: string,
   quantity: number,
+  price: number,
   description: string,
   inserted_at: string,
   updated_at: string
@@ -74,6 +75,7 @@ onMounted(() => {
       <tr>
         <th>Nome</th>
         <th>Descrição</th>
+        <th>Preço</th>
         <th>Estoque</th>
         <th>Adicionado</th>
         <th>Modificado</th>
@@ -83,6 +85,7 @@ onMounted(() => {
       <tr v-for="product in filteredProducts" :key="product.id">
         <td>{{ product.name }}</td>
         <td>{{ product.description }}</td>
+        <td>{{ product.price }}</td>
         <td>{{ product.quantity }}</td>
         <td>{{ new Date(product.inserted_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</td>
         <td>{{ new Date(product.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</td>

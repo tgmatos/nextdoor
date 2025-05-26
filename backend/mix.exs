@@ -48,7 +48,8 @@ defmodule NextDoor.MixProject do
       {:guardian, "~> 2.3"},
       {:argon2_elixir, "~> 4.1"},
       {:cachex, "~> 4.0"},
-      {:phoenix_live_dashboard, "~> 0.7"}
+      {:phoenix_live_dashboard, "~> 0.7"},
+      {:corsica, "~> 2.1"}
     ]
   end
 

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import apiClient from "@/router/axios.ts";
+import {getToken} from "@/utils/auth.ts";
 
 const router = useRouter()
-
 const product = ref({
   name: '',
   description: '',
@@ -19,8 +19,22 @@ const createProduct = async () => {
   try {
     isSubmitting.value = true
     error.value = ''
+    const token = getToken();
 
-    await axios.post('/product/create', product.value)
+    const productData = {
+      product: {
+        name: product.value.name,
+        description: product.value.description,
+        price: product.value.price,
+        stock: product.value.stock
+      }
+    }
+
+    await apiClient.post('api/store/product', productData, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
     router.push('/dashboard/products')
   } catch (e) {
     error.value = 'Failed to create product. Please try again.'
@@ -32,32 +46,32 @@ const createProduct = async () => {
 
 <template>
   <div class="products-new">
-    <h1>Create New Product</h1>
+    <h1>Adicionar Produto</h1>
 
     <form @submit.prevent="createProduct" class="product-form">
       <div class="form-group">
-        <label for="name">Product Name</label>
+        <label for="name">Nome</label>
         <input
           id="name"
           v-model="product.name"
           type="text"
           required
-          placeholder="Enter product name"
+          placeholder="Nome do Produto"
         >
       </div>
 
       <div class="form-group">
-        <label for="description">Description</label>
+        <label for="description">Descrição</label>
         <textarea
           id="description"
           v-model="product.description"
           rows="4"
-          placeholder="Enter product description"
+          placeholder="Descrição do Produto"
         ></textarea>
       </div>
 
       <div class="form-group">
-        <label for="price">Price</label>
+        <label for="price">Preço</label>
         <input
           id="price"
           v-model.number="product.price"
@@ -65,19 +79,19 @@ const createProduct = async () => {
           required
           min="0"
           step="0.01"
-          placeholder="Enter price"
+          placeholder="Preço do Produto"
         >
       </div>
 
       <div class="form-group">
-        <label for="stock">Stock</label>
+        <label for="stock">Quantidade</label>
         <input
           id="stock"
           v-model.number="product.stock"
           type="number"
           required
           min="0"
-          placeholder="Enter stock quantity"
+          placeholder="Quantidade de Produtos"
         >
       </div>
 
@@ -86,7 +100,7 @@ const createProduct = async () => {
       </div>
 
       <button type="submit" :disabled="isSubmitting">
-        {{ isSubmitting ? 'Creating...' : 'Create Product' }}
+        {{ isSubmitting ? 'Criando Produto...' : 'Criar Produto' }}
       </button>
     </form>
   </div>

@@ -5,8 +5,8 @@ defmodule NextDoor.Products do
   def create(owner_id, attr \\ %{}) do
 	case Cache.get_by(NextDoor.Store, %{owner_id: owner_id}) do
 	  {:ok, store} ->
-		%Product{}
-		|> Product.new_product_changeset(%{attr | store_id: store.id})
+            %Product{}
+		|> Product.new_product_changeset(Map.put(attr, :store_id, store.id))
 		|> Repo.insert()
 		|> case do
 		  {:ok, product} -> {:ok, product}
