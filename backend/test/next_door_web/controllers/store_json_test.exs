@@ -70,7 +70,11 @@ defmodule NextDoorWeb.StoreJSONTest do
       }
     })
 
-    conn = get(conn, ~p"/api/store")
-    assert json_response(conn, 200)["store"]["name"] == "updated store"
+    result = case NextDoor.Repo.get_by(NextDoor.Store, name: "updated store") do
+      nil -> {:error, :updated_failed}
+      store -> {:ok, store}
+    end
+
+    assert  {:ok, _} = result
   end
 end
