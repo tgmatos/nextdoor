@@ -1,0 +1,10 @@
+services:
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        network_mode: host
+        env_file:
+            - env.sh
+            
+        
