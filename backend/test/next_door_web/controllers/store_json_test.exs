@@ -69,7 +69,7 @@ defmodule NextDoorWeb.StoreJSONTest do
         category: @category
       }
     })
-        
+
     conn = get(conn, ~p"/api/store")
     assert json_response(conn, 200)["store"]["name"] == "updated store"
   end
