@@ -74,7 +74,19 @@ defmodule NextDoorWeb.StoreJSONTest do
       nil -> {:error, :updated_failed}
       store -> {:ok, store}
     end
-
     assert  {:ok, _} = result
+  end
+
+  test "Delete Store", %{conn: conn} do
+    post(conn, ~p"/api/store", %{
+      name: @store,
+      description: @descr,
+      address: @address,
+      telephone: @phone,
+      category: @category
+    })
+
+    conn = delete(conn, ~p"/api/store")
+    assert response(conn, 200)
   end
 end
