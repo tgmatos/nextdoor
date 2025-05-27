@@ -9,7 +9,7 @@ on:
   push:
     branches: [ "master" ]
     paths:
-      - './backend'
+      - 'backend'
   pull_request:
     branches: [ "master" ]
 
