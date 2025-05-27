@@ -39,9 +39,11 @@ jobs:
       uses: actions/cache@v3
       with:
         path: deps
-        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+        key: ${{ runner.os }}-mix-${{ hashFiles('backend/**/mix.lock') }}
         restore-keys: ${{ runner.os }}-mix-
     - name: Install dependencies
       run: mix deps.get
+      working-directory: backend
     - name: Run tests
       run: mix test
+      working-directory: backend
