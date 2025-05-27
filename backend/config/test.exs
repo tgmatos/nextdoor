@@ -6,16 +6,15 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :next_door, NextDoor.Repo,
-	   database: System.get_env("TEST_DB"),
-       username: System.get_env("DB_USERNAME"),
-       password: System.get_env("DB_PASSWORD"),
-       hostname: System.get_env("DB_HOST"),
-	   stacktrace: true,
-	   pool: Ecto.Adapters.SQL.Sandbox,
-	   pool_size: System.schedulers_online() * 2,
-	   show_sensitive_data_on_connection_error: true
-		 
-	   
+  database: System.get_env("TEST_DB"),
+  username: System.get_env("DB_USERNAME"),
+  password: System.get_env("DB_PASSWORD"),
+  hostname: System.get_env("DB_HOST"),
+  stacktrace: true,
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: System.schedulers_online() * 2,
+  show_sensitive_data_on_connection_error: true
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :next_door, NextDoorWeb.Endpoint,

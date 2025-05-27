@@ -4,25 +4,24 @@ defmodule NextDoor.Account do
   import Ecto.Changeset
   alias NextDoor.Store
 
-  @primary_key{:id, :binary_id, autogenerate: true}
-  
+  @primary_key {:id, :binary_id, autogenerate: true}
+
   schema "account" do
-	field :email, :string
-	field :username, :string
-	field :password, :string, redact: true
-	field :plain_password, :string, virtual: true, redact: true
-	has_one :store, Store, foreign_key: :owner_id
+    field(:email, :string)
+    field(:username, :string)
+    field(:password, :string, redact: true)
+    field(:plain_password, :string, virtual: true, redact: true)
+    has_one(:store, Store, foreign_key: :owner_id)
   end
 
   def new_account_changeset(user, params \\ %{}) do
-	user
-	|> cast(params, [:email, :plain_password, :username])
-	|> validate_required([:email, :plain_password, :username])
-	|> validate_email(:email)
-	|> register_validate_password()
+    user
+    |> cast(params, [:email, :plain_password, :username])
+    |> validate_required([:email, :plain_password, :username])
+    |> validate_email(:email)
+    |> register_validate_password()
   end
 
-	
   def register_validate_password(changeset) do
     changeset
     |> validate_length(:plain_password, min: 6, max: 256)

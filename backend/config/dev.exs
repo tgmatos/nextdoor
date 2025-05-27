@@ -2,14 +2,14 @@ import Config
 
 # Configure your database
 config :next_door, NextDoor.Repo,
-	   database: System.get_env("DEV_DB"),
-       username: System.get_env("DB_USERNAME"),
-       password: System.get_env("DB_PASSWORD"),
-       hostname: System.get_env("DB_HOST"),
-       stacktrace: true,
-	   pool_size: 10,
-	   show_sensitive_data_on_connection_error: true
-  
+  database: System.get_env("DEV_DB"),
+  username: System.get_env("DB_USERNAME"),
+  password: System.get_env("DB_PASSWORD"),
+  hostname: System.get_env("DB_HOST"),
+  stacktrace: true,
+  pool_size: 10,
+  show_sensitive_data_on_connection_error: true
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
