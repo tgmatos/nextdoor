@@ -44,5 +44,5 @@ jobs:
             registry-username: ${{ secrets.REGISTRY_USERNAME }}
             registry-password: ${{ secrets.REGISTRY_PASSWORD }}
             name: nextdoor-container
-            secure-environment-variables: DEV_DB=${{ secrets.TEST_DB }} DB_HOST=${{ secrets.DB_HOST }} DB_USERNAME=${{ secrets.DB_USERNAME }} DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            secure-environment-variables: DEV_DB=${{ secrets.DEV_DB }} DB_HOST=${{ secrets.DB_HOST }} DB_USERNAME=${{ secrets.DB_USERNAME }} DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             location: 'brazil south'
