@@ -19,12 +19,14 @@ defmodule NextDoor.Products do
   end
 
   def index(owner_id) do
-    from(p in Product,
+    result = from(p in Product,
          join: s in Store,
          on: p.store_id == s.id,
          where: s.owner_id == ^owner_id,
          select: p)
     |> Repo.all
+
+    {:ok, result}
   end
 
   def update(owner_id, product) do

@@ -32,7 +32,7 @@ defmodule NextDoorWeb.StoreController do
       result = %{stores: stores}
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
-      Cachex.put(@cache, "view_cache:#{conn.request_path}", cache_value, ttl: 120)
+      Cachex.put(@cache, "view_cache:#{conn.request_path}", cache_value, expire: 120)
       json(conn, result)
     end
   end
@@ -43,7 +43,7 @@ defmodule NextDoorWeb.StoreController do
       result = %{store: store}
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
-      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, ttl: 120)
+      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, expire: 120)
       json(conn, result)
     end
   end

@@ -30,14 +30,14 @@ defmodule NextDoorWeb.ProductController do
       result = %{products: products}
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
-      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, ttl: 60)
+      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, expire: 60)
+      IO.puts("view_cache:owner:#{owner_id}.#{conn.request_path}")
       json(conn, result)
     end
   end
   
   def update(conn, %{"product" => product}) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-
     with {:ok, _} <- Products.update(owner_id, product) do
       conn
       |> put_status(:ok)
@@ -47,11 +47,12 @@ defmodule NextDoorWeb.ProductController do
 
   def delete(conn, %{"id" => product_id}) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-
     with {:ok, _} <- Products.delete(product_id, owner_id) do
       conn
       |> put_status(:ok)
       |> send_resp(:ok, "")
     end
+    
+    Cachex.del(@cache, "view_cache:owner:#{owner_id}./api/store/product")
   end
 end
