@@ -14,36 +14,37 @@ defmodule NextDoor.Stores do
   # TODO: A way to select stores by type
   # TODO: Add Cachex
   def index do
-    Cache.get_all(Store)
+    case Repo.all(Store) do
+      nil -> {:ok, nil}
+      stores -> {:ok, stores}
+    end
   end
 
   def show(%{owner_id: owner_id}) do
-    case Cache.get_by(Store, %{owner_id: owner_id}) do
-      {:ok, record} -> {:ok, record}
-      {:error, :record_not_found} -> {:error, :store_not_found}
+    case Repo.get_by(Store, %{owner_id: owner_id}) do
+      nil -> {:error, :store_not_found}
+      store -> {:ok, store}
     end
   end
 
   def show(id) do
-    case Cache.get_by_id(Store, id) do
-      {:ok, record} -> {:ok, record}
-      {:error, :record_not_found} -> {:error, :store_not_found}
+    case Repo.get(Store, id) do
+      nil -> {:error, :store_not_found}
+      store -> {:ok, store}
     end
   end
 
   def update(record, owner_id) do
-    case Cache.get_by(Store, %{owner_id: owner_id}) do
-      {:ok, store} ->
+    case Repo.get_by(Store, %{owner_id: owner_id}) do
+      nil -> {:error, :store_not_found}
+      store ->
         Store.update_store_changeset(store, record)
         |> Repo.update()
-        
-      {:error, :record_not_found} ->
-        {:error, :record_not_found}
     end
   end
 
   def delete(owner_id) do
     Repo.get_by(Store, owner_id: owner_id)
-    |> Repo.delete()
+     |> Repo.delete()
   end
 end

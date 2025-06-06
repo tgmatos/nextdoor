@@ -1,7 +1,8 @@
 defmodule NextDoorWeb.StoreController do
   use NextDoorWeb, :controller
   alias NextDoor.Stores
-
+  @cache :nd_cache
+    
   action_fallback(NextDoorWeb.FallbackController)
 
   def create(conn, %{
@@ -28,21 +29,22 @@ defmodule NextDoorWeb.StoreController do
 
   def index(conn, _params) do
     with {:ok, stores} <- Stores.index() do
-      render(conn, :index, %{stores: stores})
-    end
-  end
-
-  def show(conn, %{"id" => id}) do
-    with {:ok, id} <- Stores.show(id) do
-      render(conn, :show, %{store: id})
+      result = %{stores: stores}
+      json_response = Jason.encode!(result)
+      cache_value = {200, json_response}
+      Cachex.put(@cache, "view_cache:#{conn.request_path}", cache_value, ttl: 120)
+      json(conn, result)
     end
   end
 
   def show(conn, _params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-
     with {:ok, store} <- Stores.show(%{owner_id: owner_id}) do
-      render(conn, :show, %{store: store})
+      result = %{store: store}
+      json_response = Jason.encode!(result)
+      cache_value = {200, json_response}
+      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, ttl: 120)
+      json(conn, result)
     end
   end
 
@@ -57,7 +59,6 @@ defmodule NextDoorWeb.StoreController do
 
   def delete(conn, _params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-
     with {:ok, _} <- Stores.delete(owner_id) do
       conn
       |> put_status(:ok)
