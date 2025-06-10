@@ -4,34 +4,54 @@ import apiClient from "../router/axios.ts"
 import {setToken} from "@/utils/auth.ts";
 import router from "@/router";
 
+type Address = {
+  number: String,
+  street: String,
+  neighborhood: String,
+  cep: String
+}
+
 type User = {
   email: String,
   username: String,
   password: String,
+  address: Address
 }
 
 const email = ref('');
 const username = ref('');
 const password = ref('');
 
+const number = ref('')
+const street = ref('')
+const neighborhood = ref('')
+const cep = ref('')
+
 type RegisterResponse  = {
   token: string;
 }
 
-const registerUser = async (email: String, username: String, password: String) => {
+const registerUser = async (email: String, username: String, password: String, number: String, street: String, neighborhood: String, cep: String) => {
+  let address: Address = {
+    number: number,
+    street: street,
+    neighborhood: neighborhood,
+    cep: cep
+  }
+
   let user: User = {
     email: email,
     username: username,
     password: password,
+    address: address
   }
 
   try {
     const response = await apiClient.post<RegisterResponse>("/api/account/register", user);
     if(response.data.token != null) {
       setToken(response.data.token);
-      router.push('/store/new')
+      await router.push('/store/new')
     }
-
   } catch (error) {
     console.error("Registration failed:", error);
   }
@@ -39,10 +59,16 @@ const registerUser = async (email: String, username: String, password: String) =
 </script>
 
 <template>
-  <form @submit.prevent="registerUser(email, username, password)">
+  <form @submit.prevent="registerUser(email, username, password, number, street, neighborhood, cep)">
+    <h3>User</h3>
     <input v-model="email" type="email" placeholder="Email" required/>
     <input v-model="username" type="text" placeholder="Username" required />
     <input v-model="password" type="password" placeholder="Password" required/>
+    <h3>Address</h3>
+    <input v-model="street" type="text" placeholder="street" required/>
+    <input v-model="number" type="text" placeholder="number" required />
+    <input v-model="neighborhood" type="text" placeholder="neighborhood" required/>
+    <input v-model="cep" type="text" placeholder="cep" required/>
     <button type="submit">Registrar</button>
   </form>
 </template>

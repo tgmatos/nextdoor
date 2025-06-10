@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import apiClient from "@/router/axios.ts";
-import {setToken} from "@/utils/auth.ts";
+import {getToken} from "@/utils/auth.ts";
 import router from "@/router";
 
 type Category = 'VESTUARIO' | 'ELETRONICOS' | 'COSMETICOS' | 'PETS' | 'LIVRARIA';
@@ -9,7 +9,6 @@ type Category = 'VESTUARIO' | 'ELETRONICOS' | 'COSMETICOS' | 'PETS' | 'LIVRARIA'
 type Store = {
   name: String,
   description: String,
-  address: String,
   telephone: String,
   category: Category
 }
@@ -20,21 +19,26 @@ type RegisterResponse  = {
 
 const name = ref('');
 const description = ref('');
-const address = ref('');
 const telephone = ref('');
 const category = ref<Category>('VESTUARIO');
 
-const registerStore = async (name: String, description: String, address: String, telephone: String, category: Category) => {
+const registerStore = async (name: String, description: String, telephone: String, category: Category) => {
   let store: Store = {
     name: name,
     description: description,
-    address: address,
     telephone: telephone,
     category: category,
   };
 
   try {
-    const response = await apiClient.post<RegisterResponse>("/api/store", store);
+    const token = getToken();
+    const response = await apiClient.post<RegisterResponse>("/api/store", store,
+      {
+        headers:
+          {
+            'Authorization': `Bearer ${token}`
+          }
+      });
     if (response.data.store_id != null) {
       router.push("/about")
     }
@@ -43,18 +47,11 @@ const registerStore = async (name: String, description: String, address: String,
   }
 }
 </script>
-<!--
-%{"name" => name,
-"description" => description,
-"address" => address,
-"telephone" => telephone,
-"category" => category}
--->
+
 <template>
-  <form @submit.prevent="registerStore(name, description, address, telephone, category)">
+  <form @submit.prevent="registerStore(name, description, telephone, category)">
     <input v-model="name" type="text" placeholder="Nome da Loja" required>
     <input v-model="description" type="text" placeholder="Descrição" required>
-    <input v-model="address" type="text" placeholder="Endereço" required>
     <input v-model="telephone" type="tel" placeholder="Telefone" required>
     <select v-model="category" required>
       <option value="VESTUARIO">Vestuário</option>
