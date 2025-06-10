@@ -1,7 +1,7 @@
 defmodule NextDoor.Store do
   use Ecto.Schema
   import Ecto.Changeset
-  alias NextDoor.Account
+  alias NextDoor.{Account, Address}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -10,18 +10,19 @@ defmodule NextDoor.Store do
   schema "store" do
     field(:name, :string)
     field(:description, :string)
-    field(:address, :string)
     field(:telephone, :string)
     field(:category, :string)
     timestamps()
+    belongs_to(:address, Address, references: :id)
     belongs_to(:owner, Account, foreign_key: :owner_id)
   end
 
   def new_store_changeset(store, params \\ %{}) do
     store
-    |> cast(params, [:name, :description, :address, :telephone, :category, :owner_id])
-    |> validate_required([:name, :description, :address, :telephone, :category, :owner_id])
+    |> cast(params, [:name, :description, :telephone, :category, :owner_id, :address_id])
+    |> validate_required([:name, :description, :telephone, :category, :owner_id, :address_id])
     |> foreign_key_constraint(:owner_id)
+    |> foreign_key_constraint(:address_id)
   end
 
   def update_store_changeset(store, params \\ %{}) do

@@ -8,7 +8,6 @@ defmodule NextDoorWeb.StoreController do
   def create(conn, %{
         "name" => name,
         "description" => description,
-        "address" => address,
         "telephone" => telephone,
         "category" => category
       }) do
@@ -18,7 +17,6 @@ defmodule NextDoorWeb.StoreController do
            Stores.create(%{
              name: name,
              description: description,
-             address: address,
              telephone: telephone,
              category: category,
              owner_id: owner_id

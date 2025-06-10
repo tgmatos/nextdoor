@@ -4,12 +4,32 @@ defmodule NextDoorWeb.AccountController do
 
   action_fallback(NextDoorWeb.FallbackController)
 
-  def register(conn, %{"email" => email, "username" => username, "password" => plain_password}) do
+  def register(conn, params) do
+    %{
+      "email" => email,
+      "username" => username,
+      "password" => plain_password,
+      "address" => %{
+        "number" => number,
+        "street" => street,
+        "neighborhood" => neighborhood,
+        "cep" => cep
+      }
+    } = params
+
     with {:ok, token, _claims} <-
            Accounts.new_account(%{
              email: email,
              username: username,
-             plain_password: plain_password
+             plain_password: plain_password,
+             address: [
+               %{
+                 address_number: number,
+                 street: street,
+               neighborhood: neighborhood,
+                 cep: cep
+               }
+             ]
            }) do
       render(conn, :register_account, %{token: token})
     end

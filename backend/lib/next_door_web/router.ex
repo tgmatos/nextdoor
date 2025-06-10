@@ -4,7 +4,6 @@ defmodule NextDoorWeb.Router do
 
   pipeline :api do
     plug(:accepts, ["json"])
-    plug(NextDoorWeb.CachePlug)
   end
 
   pipeline :auth do

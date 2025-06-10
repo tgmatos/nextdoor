@@ -32,13 +32,6 @@ defmodule NextDoorWeb.Endpoint do
     only: NextDoorWeb.static_paths()
   )
 
-  # Code reloading can be explicitly enabled under the
-  # :code_reloader configuration of your endpoint.
-  if code_reloading? do
-    plug(Phoenix.CodeReloader)
-    plug(Phoenix.Ecto.CheckRepoStatus, otp_app: :next_door)
-  end
-
   plug(Plug.RequestId)
   plug(Plug.Telemetry, event_prefix: [:phoenix, :endpoint])
 
@@ -51,7 +44,7 @@ defmodule NextDoorWeb.Endpoint do
   plug(Plug.MethodOverride)
   plug(Plug.Head)
   plug(Plug.Session, @session_options)
-  # plug Corsica, origins: "http://localhost:5173"
   plug(NextDoorWeb.CORS)
+  plug(NextDoorWeb.CachePlug)
   plug(NextDoorWeb.Router)
 end

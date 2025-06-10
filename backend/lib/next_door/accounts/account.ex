@@ -2,7 +2,7 @@ defmodule NextDoor.Account do
   use Ecto.Schema
   import EctoCommons.EmailValidator
   import Ecto.Changeset
-  alias NextDoor.Store
+  alias NextDoor.{Store, Address}
 
   @primary_key {:id, :binary_id, autogenerate: true}
 
@@ -12,6 +12,7 @@ defmodule NextDoor.Account do
     field(:password, :string, redact: true)
     field(:plain_password, :string, virtual: true, redact: true)
     has_one(:store, Store, foreign_key: :owner_id)
+    many_to_many(:address, Address, join_through: "account_address", join_keys: [account_id: :id, address_id: :id])
   end
 
   def new_account_changeset(user, params \\ %{}) do
@@ -20,6 +21,7 @@ defmodule NextDoor.Account do
     |> validate_required([:email, :plain_password, :username])
     |> validate_email(:email)
     |> register_validate_password()
+    |> cast_assoc(:address, required: true)
   end
 
   def register_validate_password(changeset) do
