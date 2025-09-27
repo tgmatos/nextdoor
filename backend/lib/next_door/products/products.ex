@@ -41,8 +41,8 @@ defmodule NextDoor.Products do
   def delete(product_id, owner_id) do
     case Repo.get_by(NextDoor.Store, %{owner_id: owner_id}) do
       nil -> {:error, :store_not_found}
-      {:ok, store} ->
-        Repo.get_by(Product, product_id: product_id, store_id: store.id)
+      store ->
+        Repo.get_by(Product, id: product_id, store_id: store.id)
         |> Repo.delete()
     end
   end

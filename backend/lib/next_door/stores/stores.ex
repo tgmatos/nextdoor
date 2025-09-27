@@ -3,15 +3,8 @@ defmodule NextDoor.Stores do
   import Ecto.Query
 
   def create(attr \\ %{}) do
-    address_id =
-      from(acd in "account_address",
-           where: acd.account_id == ^Ecto.UUID.dump!(attr.owner_id),
-           select: acd.address_id)
-      |> Repo.one
-      |> Ecto.UUID.cast!
-    
     %Store{}
-    |> Store.new_store_changeset(Map.put(attr, :address_id, address_id))
+    |> Store.new_store_changeset(attr)
     |> Repo.insert()
     |> case do
       {:ok, store} -> {:ok, store}

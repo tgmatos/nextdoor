@@ -35,7 +35,6 @@ defmodule NextDoor.MixProject do
       {:phoenix, "~> 1.7.14"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.10"},
-      {:ecto_commons, "~> 0.3.6"},
       {:ecto_sqlite3, "~> 0.17"},
       {:postgrex, ">= 0.0.0"},
       {:swoosh, "~> 1.5"},

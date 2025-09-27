@@ -18,7 +18,7 @@ defmodule NextDoor.Accounts do
       {_, token, _} = NextDoor.AccountManager.encode_and_sign(account)
       {:ok, token}
     else
-      error when error in [nil, false] -> {:error, :unauthorized}
+      _error -> {:error, :unauthorized}
     end
   end
 end

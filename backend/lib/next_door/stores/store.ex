@@ -13,16 +13,15 @@ defmodule NextDoor.Store do
     field(:telephone, :string)
     field(:category, :string)
     timestamps()
-    belongs_to(:address, Address, references: :id)
+    # belongs_to(:address, Address, references: :id)
     belongs_to(:owner, Account, foreign_key: :owner_id)
   end
 
   def new_store_changeset(store, params \\ %{}) do
     store
-    |> cast(params, [:name, :description, :telephone, :category, :owner_id, :address_id])
-    |> validate_required([:name, :description, :telephone, :category, :owner_id, :address_id])
+    |> cast(params, [:name, :description, :telephone, :category, :owner_id])
+    |> validate_required([:name, :description, :telephone, :category, :owner_id])
     |> foreign_key_constraint(:owner_id)
-    |> foreign_key_constraint(:address_id)
   end
 
   def update_store_changeset(store, params \\ %{}) do

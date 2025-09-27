@@ -26,3 +26,10 @@ erl_crash.dump
 next_door-*.tar
 
 env.sh
+
+backend/.lexical/
+backend/_build/
+backend/.elixir-tools/_build/
+backend/deps
+*~
+.#*

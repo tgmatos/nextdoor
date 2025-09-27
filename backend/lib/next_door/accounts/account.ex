@@ -1,6 +1,5 @@
 defmodule NextDoor.Account do
   use Ecto.Schema
-  import EctoCommons.EmailValidator
   import Ecto.Changeset
   alias NextDoor.{Store, Address}
 
@@ -19,7 +18,6 @@ defmodule NextDoor.Account do
     user
     |> cast(params, [:email, :plain_password, :username])
     |> validate_required([:email, :plain_password, :username])
-    |> validate_email(:email)
     |> register_validate_password()
     |> cast_assoc(:address, required: true)
   end
