@@ -1,5 +1,5 @@
 defmodule NextDoor.Stores do
-  alias NextDoor.{Store, Repo}
+  alias NextDoor.{Store, Repo, Order}
   import Ecto.Query
 
   def create(attr \\ %{}) do
@@ -19,6 +19,25 @@ defmodule NextDoor.Stores do
       nil -> {:ok, nil}
       stores -> {:ok, stores}
     end
+  end
+
+  def index(category) do
+    case Repo.get_by(Store, %{category: category}) do
+      nil -> {:ok, nil}
+      stores -> {:ok, stores}
+    end
+  end
+
+  def get_orders(%{owner_id: owner_id}) do
+    result = from(s in Store,
+         join: o in Order,
+         on: s.id == o.store_id,
+         where: s.owner_id == ^owner_id,
+         select: o)
+    |> Repo.all
+    |> Repo.preload([order_product: [:product]])
+
+    {:ok, result}
   end
 
   def show(%{owner_id: owner_id}) do

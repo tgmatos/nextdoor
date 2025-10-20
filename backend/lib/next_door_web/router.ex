@@ -28,8 +28,9 @@ defmodule NextDoorWeb.Router do
     resources("/account", AccountController, only: [:show, :update, :delete], singleton: true)
 
     resources "/store", StoreController,
-      only: [:create, :update, :delete, :show],
-      singleton: true do
+              only: [:create, :update, :delete, :show],
+              singleton: true do
+      get("/get-orders", StoreController, :get_orders)
       resources("/product", ProductController, only: [:create, :update, :delete, :index])
     end
   end

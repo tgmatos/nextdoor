@@ -35,6 +35,18 @@ defmodule NextDoorWeb.StoreController do
     end
   end
 
+  def get_orders(conn, _params) do
+    %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
+
+    with {:ok, orders} <- Stores.get_orders(%{owner_id: owner_id}) do
+      result = %{orders: orders}
+      json_response = Jason.encode!(result)
+      cache_value = {200, json_response}
+      Cachex.put(@cache, "view_cache:#{conn.request_path}", cache_value, expire: 120)
+      json(conn, result)
+    end
+  end
+
   def show(conn, _params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
     with {:ok, store} <- Stores.show(%{owner_id: owner_id}) do
