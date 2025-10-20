@@ -5,15 +5,26 @@ defmodule NextDoorWeb.CachePlug do
   def init(opts), do: opts
 
   def call(conn, _opts) do
-    cache_key = case Guardian.Plug.current_claims(conn) do
-      nil -> "view_cache:#{conn.request_path}"
-      claims ->
-        %{"sub" => owner_id} = claims
+    %{req_headers: headers} = conn
+    [{_, bearer}] = headers
+    |> Enum.filter(fn x ->
+      {a, b} = x
+      case a == "authorization" do
+        true -> b
+        false -> nil
+      end
+    end)
+
+    [_, token] = String.split(bearer, "Bearer ")
+    cache_key = case NextDoor.AccountManager.decode_and_verify(token) do
+      {:ok, %{"sub" => owner_id}} ->
         "view_cache:owner:#{owner_id}.#{conn.request_path}"
+        {:error, _} -> "view_cache:#{conn.request_path}"
     end
-    
+
     case Cachex.get(@cache, cache_key) do
-      {:ok, nil} -> conn
+      {:ok, nil} ->
+        conn
       {:ok, {status, response}} ->
         conn
         |> put_resp_content_type("application/json")

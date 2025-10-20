@@ -40,4 +40,9 @@ defmodule NextDoorWeb.AccountController do
       render(conn, :login, %{token: token})
     end
   end
+
+  def logout(conn, params) do
+    Guardian.Plug.current_token(conn)
+    |> NextDoor.AccountManager.revoke
+  end
 end

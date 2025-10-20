@@ -33,6 +33,17 @@ defmodule NextDoor.Stores do
          join: o in Order,
          on: s.id == o.store_id,
          where: s.owner_id == ^owner_id,
+         select: %{id: o.id, total: o.total, payment_method: o.payment_method, status: o.status_order})
+    |> Repo.all
+
+    {:ok, result}
+  end
+
+  def get_order(%{owner_id: owner_id, order_id: order_id}) do
+    result = from(s in Store,
+         join: o in Order,
+         on: s.id == o.store_id,
+         where: s.owner_id == ^owner_id and o.id == ^order_id,
          select: o)
     |> Repo.all
     |> Repo.preload([order_product: [:product]])

@@ -1,7 +1,7 @@
 defmodule NextDoor.Order do
   use Ecto.Schema
   import Ecto.Changeset
-  alias NextDoor.{Store, Account, Product, Address, OrderProduct, Product}
+  alias NextDoor.{Store, Account, Address, OrderProduct}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id

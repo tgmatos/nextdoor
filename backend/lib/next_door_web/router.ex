@@ -30,7 +30,10 @@ defmodule NextDoorWeb.Router do
     resources "/store", StoreController,
               only: [:create, :update, :delete, :show],
               singleton: true do
-      get("/get-orders", StoreController, :get_orders)
+      scope "/order" do
+        get("/", StoreController, :get_orders)
+        get("/:id", StoreController, :get_order)
+      end
       resources("/product", ProductController, only: [:create, :update, :delete, :index])
     end
   end
