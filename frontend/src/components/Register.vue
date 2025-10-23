@@ -60,12 +60,12 @@ const registerUser = async (email: String, username: String, password: String, n
 
 <template>
   <form @submit.prevent="registerUser(email, username, password, number, street, neighborhood, cep)">
-    <h3>User</h3>
+    <h3>Usuário</h3>
     <input v-model="email" type="email" placeholder="Email" required/>
-    <input v-model="username" type="text" placeholder="Username" required />
-    <input v-model="password" type="password" placeholder="Password" required/>
-    <h3>Address</h3>
-    <input v-model="street" type="text" placeholder="street" required/>
+    <input v-model="username" type="text" placeholder="usuário" required />
+    <input v-model="password" type="password" placeholder="Senha" required/>
+    <h3>Endereço</h3>
+    <input v-model="street" type="text" placeholder="Rua" required/>
     <input v-model="number" type="text" placeholder="number" required />
     <input v-model="neighborhood" type="text" placeholder="neighborhood" required/>
     <input v-model="cep" type="text" placeholder="cep" required/>

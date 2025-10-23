@@ -6,5 +6,12 @@ services:
         network_mode: host
         env_file:
             - env.sh
-            
+    frontend: 
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        network_mode: host 
+        env_file: 
+            - env.sh
+        
         

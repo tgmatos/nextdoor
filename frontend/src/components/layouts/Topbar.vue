@@ -4,9 +4,6 @@ import { ref } from 'vue'
 
 <template>
   <header class="topbar">
-    <div class="search">
-      <input type="text" placeholder="Search...">
-    </div>
   </header>
 </template>
 
