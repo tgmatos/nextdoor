@@ -8,7 +8,7 @@ defmodule NextDoorWeb.ProductController do
           "name" => name,
           "description" => description,
           "price" => price,
-          "stock" => quantity
+          "quantity" => quantity
         }
       }) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
@@ -18,16 +18,26 @@ defmodule NextDoorWeb.ProductController do
              name: name,
              description: description,
              price: price,
-             quantity: quantity
+             inventory: %{quantity: quantity}
            }) do
       render(conn, :create, %{product: product})
+    end
+  end
+
+  def list(conn, %{"id" => store_id}) do
+    with {:ok, products} <- Products.list_products(store_id) do
+      result = NextDoorWeb.ProductJSON.show(%{products: products})
+      json_response = Jason.encode!(result)
+      cache_value = {200, json_response}
+      Cachex.put(@cache, "view_cache:#{conn.request_path}", cache_value, expire: 60)
+      json(conn, result)
     end
   end
 
   def index(conn, _params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
     with {:ok, products} <- Products.index(owner_id) do
-      result = %{products: products}
+      result = NextDoorWeb.ProductJSON.show(%{products: products})
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
       Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, expire: 60)
@@ -35,12 +45,17 @@ defmodule NextDoorWeb.ProductController do
     end
   end
   
-  def update(conn, %{"product" => product}) do
+  def update(conn, %{"id" => id, "product" => product}) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-    with {:ok, _} <- Products.update(owner_id, product) do
-      conn
-      |> put_status(:ok)
-      |> send_resp(:ok, "")
+
+    product =
+      case Map.has_key?(product, "quantity") do
+        true -> Map.put(product, "inventory", %{"quantity" => Map.get(product, "quantity")})
+        false -> product
+      end
+
+    with {:ok, p} <- Products.update(owner_id, id, product) do
+      render(conn, :create, %{product: p})
     end
   end
 

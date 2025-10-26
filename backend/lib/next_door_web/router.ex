@@ -19,7 +19,13 @@ defmodule NextDoorWeb.Router do
       post("/login", AccountController, :login)
     end
 
-    resources("/stores", StoreController, only: [:index, :show])
+    scope "/stores" do
+      get("/", StoreController, :index)
+      get("/:id", StoreController, :get_by_id)
+      scope "/:id/product" do
+        get("/", ProductController, :list)
+      end
+    end
   end
 
   # Authenticated routes

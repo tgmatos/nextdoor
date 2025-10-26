@@ -11,7 +11,7 @@ defmodule NextDoor.Account do
     field(:password, :string, redact: true)
     field(:plain_password, :string, virtual: true, redact: true)
     has_one(:store, Store, foreign_key: :owner_id)
-    many_to_many(:address, Address, join_through: "account_address", join_keys: [account_id: :id, address_id: :id])
+    many_to_many(:address, Address, join_through: "account_address", join_keys: [account_id: :id, address_id: :id], on_delete: :delete_all)
   end
 
   def new_account_changeset(user, params \\ %{}) do

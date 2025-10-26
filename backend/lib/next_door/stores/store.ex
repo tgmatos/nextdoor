@@ -26,7 +26,7 @@ defmodule NextDoor.Store do
 
   def update_store_changeset(store, params \\ %{}) do
     store
-    |> cast(params, [:name, :description, :address, :telephone, :category])
+    |> cast(params, [:name, :description, :telephone, :category])
     |> validate_required([:owner_id])
     |> foreign_key_constraint(:owner_id)
   end

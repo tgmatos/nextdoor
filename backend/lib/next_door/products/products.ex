@@ -1,5 +1,5 @@
 defmodule NextDoor.Products do
-  alias NextDoor.{Product, Store, Repo, Cache}
+  alias NextDoor.{Store, Repo, Cache, Product, Inventory}
   import Ecto.Query
 
   def create(owner_id, attr \\ %{}) do
@@ -18,6 +18,19 @@ defmodule NextDoor.Products do
     end
   end
 
+  def list_products(store_id) do
+    result = from(p in Product,
+                  join: s in Store,
+                  where: s.id == ^store_id,
+                  select: p)
+    |> Repo.all
+    |>Enum.map(fn products ->
+      products |> Repo.preload(:inventory)
+    end)
+
+    {:ok, result}
+  end
+  
   def index(owner_id) do
     result = from(p in Product,
          join: s in Store,
@@ -25,25 +38,31 @@ defmodule NextDoor.Products do
          where: s.owner_id == ^owner_id,
          select: p)
     |> Repo.all
+    |> Enum.map(fn products ->
+      products |> Repo.preload(:inventory)
+    end)
 
     {:ok, result}
   end
 
-  def update(owner_id, product) do
-    case Repo.get_by(NextDoor.Store, %{owner_id: owner_id}) do
-      nil -> {:error, :store_not_found}
-      store ->
-        Product.update_product_changeset(%{product | store_id: store.id})
-        |> Repo.update()
-    end
+  def update(owner_id, product_id, product) do
+    from(p in Product,
+                  join: s in Store,
+                  on: p.store_id == s.id,
+                  where: s.owner_id == ^owner_id and p.id == ^product_id,
+                  select: p)
+    |> Repo.one()
+    |> Repo.preload(:inventory)
+    |> Product.update_product_changeset(product)
+    |> Repo.update()
   end
 
   def delete(product_id, owner_id) do
-    case Repo.get_by(NextDoor.Store, %{owner_id: owner_id}) do
-      nil -> {:error, :store_not_found}
-      store ->
-        Repo.get_by(Product, id: product_id, store_id: store.id)
-        |> Repo.delete()
-    end
+    from(p in Product,
+         join: s in Store,
+         on: p.store_id == s.id,
+         where: s.owner_id == ^owner_id and p.id == ^product_id)
+    |> Repo.one
+    |> Repo.delete
   end
 end
