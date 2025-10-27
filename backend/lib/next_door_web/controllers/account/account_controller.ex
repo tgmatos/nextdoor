@@ -41,8 +41,10 @@ defmodule NextDoorWeb.AccountController do
     end
   end
 
-  def logout(conn, params) do
-    Guardian.Plug.current_token(conn)
-    |> NextDoor.AccountManager.revoke
+  def logout(conn, _params) do
+    IO.inspect(conn)
+    # NextDoor.AccountManager.
+    # Guardian.Plug.current_token(conn)
+    # |> NextDoor.AccountManager.revoke
   end
 end

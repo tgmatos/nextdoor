@@ -4,6 +4,7 @@ defmodule NextDoor.Account do
   alias NextDoor.{Store, Address}
 
   @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
 
   schema "account" do
     field(:email, :string)

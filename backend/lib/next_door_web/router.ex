@@ -11,34 +11,50 @@ defmodule NextDoorWeb.Router do
   end
 
   # Unauthenticated routes
-  scope "/api", NextDoorWeb do
+  scope("/api", NextDoorWeb) do
     pipe_through(:api)
 
-    scope "/account" do
+    scope("/account") do
       post("/register", AccountController, :register)
       post("/login", AccountController, :login)
+      get("/logout", AccountController, :logout)
     end
 
-    scope "/stores" do
+    scope("/stores") do
       get("/", StoreController, :index)
       get("/:id", StoreController, :get_by_id)
-      scope "/:id/product" do
+      scope("/:id/product") do
         get("/", ProductController, :list)
       end
     end
   end
 
   # Authenticated routes
-  scope "/api", NextDoorWeb do
+  scope("/api", NextDoorWeb) do
     pipe_through([:api, :auth])
-    resources("/account", AccountController, only: [:show, :update, :delete], singleton: true)
+    
+    resources("/account", AccountController,
+              only: [:show, :update, :delete],
+              singleton: true) do
+      scope("/order") do
+        get("/", OrderController, :get_orders_by_customer)
+        get("/:id", OrderController, :get_order_by_customer)
+      end
 
-    resources "/store", StoreController,
+      scope("/address") do
+        get("/", AddressController, :list_addresses)
+        get("/:id", AddressController, :get_address)
+        patch("/:id", AddressController, :update_address)
+      end
+    end
+
+    resources("/store", StoreController,
               only: [:create, :update, :delete, :show],
-              singleton: true do
-      scope "/order" do
-        get("/", StoreController, :get_orders)
-        get("/:id", StoreController, :get_order)
+              singleton: true) do
+      scope("/order") do
+        get("/", OrderController, :list_orders_by_store)
+        get("/:id", OrderController, :get_order_by_store)
+        #put("/:id", StoreController, :update_status_order)
       end
       resources("/product", ProductController, only: [:create, :update, :delete, :index])
     end
@@ -46,12 +62,12 @@ defmodule NextDoorWeb.Router do
 
   # Enable Swoosh mailbox preview in development
   if Application.compile_env(:next_door, :dev_routes) do
-    scope "/" do
+    scope("/") do
       # pipe_through :browser
       live_dashboard("/dashboard", metrics: NextDoorWeb.Telemetry)
     end
 
-    scope "/dev" do
+    scope("/dev")do
       pipe_through([:fetch_session, :protect_from_forgery])
 
       forward("/mailbox", Plug.Swoosh.MailboxPreview)

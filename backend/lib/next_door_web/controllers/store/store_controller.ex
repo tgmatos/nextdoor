@@ -71,27 +71,4 @@ defmodule NextDoorWeb.StoreController do
       |> send_resp(:ok, "")
     end
   end
-
-  def get_orders(conn, _params) do
-    %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-    with {:ok, orders} <- Stores.get_orders(%{owner_id: owner_id}) do
-      result = %{orders: orders}
-      json_response = Jason.encode!(result)
-      cache_value = {200, json_response}
-      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, expire: 1000)
-      json(conn, result)
-    end
-  end
-
-  def get_order(conn, %{"id" => order_id}) do
-    %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-
-    with {:ok, order} <- Stores.get_order(%{owner_id: owner_id, order_id: order_id}) do
-      result = %{order: order}
-      json_response = Jason.encode!(result)
-      cache_value = {200, json_response}
-      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, expire: 1000)
-      json(conn, result)
-    end
-  end
 end

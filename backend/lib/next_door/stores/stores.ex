@@ -1,6 +1,6 @@
 defmodule NextDoor.Stores do
-  alias NextDoor.{Store, Repo, Order}
-  import Ecto.Query
+  alias NextDoor.{Store, Repo}
+  #import Ecto.Query
 
   def create(attr \\ %{}) do
     %Store{}
@@ -61,28 +61,5 @@ defmodule NextDoor.Stores do
   def delete(owner_id) do
     Repo.get_by(Store, owner_id: owner_id)
      |> Repo.delete()
-  end
-
-    def get_orders(%{owner_id: owner_id}) do
-    result = from(s in Store,
-         join: o in Order,
-         on: s.id == o.store_id,
-         where: s.owner_id == ^owner_id,
-         select: %{id: o.id, total: o.total, payment_method: o.payment_method, status: o.status_order})
-    |> Repo.all
-
-    {:ok, result}
-  end
-
-  def get_order(%{owner_id: owner_id, order_id: order_id}) do
-    result = from(s in Store,
-         join: o in Order,
-         on: s.id == o.store_id,
-         where: s.owner_id == ^owner_id and o.id == ^order_id,
-         select: o)
-    |> Repo.all
-    |> Repo.preload([order_product: [:product]])
-
-    {:ok, result}
   end
 end

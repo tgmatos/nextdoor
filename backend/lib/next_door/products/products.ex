@@ -1,5 +1,5 @@
 defmodule NextDoor.Products do
-  alias NextDoor.{Store, Repo, Cache, Product, Inventory}
+  alias NextDoor.{Store, Repo, Cache, Product}
   import Ecto.Query
 
   def create(owner_id, attr \\ %{}) do
@@ -21,6 +21,7 @@ defmodule NextDoor.Products do
   def list_products(store_id) do
     result = from(p in Product,
                   join: s in Store,
+                  on: s.id == p.store_id,
                   where: s.id == ^store_id,
                   select: p)
     |> Repo.all

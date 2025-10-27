@@ -30,7 +30,6 @@ defmodule NextDoor.Product do
     product
     |> cast(params, [:name, :price, :description])
     |> cast_assoc(:inventory)
-    # |> cast_assoc(:inventory, :update)
     |> foreign_key_constraint(:store_id)
     |> foreign_key_constraint(:product_id)
   end
