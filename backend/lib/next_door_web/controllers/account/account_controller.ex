@@ -41,10 +41,12 @@ defmodule NextDoorWeb.AccountController do
     end
   end
 
-  def logout(conn, _params) do
-    IO.inspect(conn)
-    # NextDoor.AccountManager.
-    # Guardian.Plug.current_token(conn)
-    # |> NextDoor.AccountManager.revoke
+  def update(conn, %{"account" => account}) do
+    %{"sub" => account_id} = Guardian.Plug.current_claims(conn)
+    with {:ok, acc} <- Accounts.update(%{account_id: account_id, account: account}) do
+      IO.inspect(acc)
+      %{email: email, username: username} = acc
+      json(conn, %{email: email, username: username})
+    end
   end
 end

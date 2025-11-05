@@ -8,19 +8,33 @@ defmodule NextDoorWeb.ProductController do
           "name" => name,
           "description" => description,
           "price" => price,
-          "quantity" => quantity
+          "quantity" => quantity,
+          "image" => base64_image,
         }
       }) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-
-    with {:ok, product} <-
+    
+    with {:ok, image} <- decode_base64_image(base64_image),
+         {:ok, product} <-
            Products.create(owner_id, %{
              name: name,
              description: description,
              price: price,
+             image: image,
              inventory: %{quantity: quantity}
            }) do
       render(conn, :create, %{product: product})
+    end
+  end
+
+  defp decode_base64_image(base64_string) do
+    cleaned =
+      base64_string
+      |> String.replace(~r/^data:image\/[a-z]+;base64,/, "")
+    
+    case Base.decode64(cleaned) do
+      {:ok, binary} -> {:ok, binary}
+      :error -> {:error, :invalid_base64}
     end
   end
 
@@ -53,7 +67,12 @@ defmodule NextDoorWeb.ProductController do
         true -> Map.put(product, "inventory", %{"quantity" => Map.get(product, "quantity")})
         false -> product
       end
-
+    
+    product = with true <- Map.has_key?(product, "image"),
+                   {:ok, img} <- decode_base64_image(Map.get(product, "image")) do
+                Map.put(product, "image", img)
+    end
+    
     with {:ok, p} <- Products.update(owner_id, id, product) do
       render(conn, :create, %{product: p})
     end

@@ -34,8 +34,9 @@ defmodule NextDoorWeb.Router do
     pipe_through([:api, :auth])
     
     resources("/account", AccountController,
-              only: [:show, :update, :delete],
+              only: [:show, :delete],
               singleton: true) do
+      patch("/", AccountController, :update)
       scope("/order") do
         get("/", OrderController, :get_orders_by_customer)
         get("/:id", OrderController, :get_order_by_customer)

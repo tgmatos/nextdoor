@@ -1,7 +1,7 @@
 defmodule NextDoor.Accounts do
   alias NextDoor.Account
   alias NextDoor.Repo
-
+  
   def new_account(attr \\ %{}) do
     %Account{}
     |> Account.new_account_changeset(attr)
@@ -20,5 +20,11 @@ defmodule NextDoor.Accounts do
     else
       _error -> {:error, :unauthorized}
     end
+  end
+
+  def update(%{account_id: id, account: account}) do
+    Repo.get(Account, id)
+    |> Account.update_changeset(account)
+    |> Repo.update()
   end
 end

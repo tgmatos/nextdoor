@@ -34,6 +34,17 @@ defmodule NextDoor.Account do
     |> hash_password
   end
 
+  def update_changeset(user, params \\ %{}) do
+    user
+    |> cast(params, [:email, :username])
+  end
+
+  def update_password(user, params \\ %{}) do
+    user
+    |> cast(params, [:plain_password])
+    |> register_validate_password()
+  end
+
   def hash_password(changeset) do
     case Map.get(changeset, :errors) do
       [] ->

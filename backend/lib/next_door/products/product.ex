@@ -11,6 +11,7 @@ defmodule NextDoor.Product do
     field(:name, :string)
     field(:price, :decimal)
     field(:description, :string)
+    field(:image, :binary)
     belongs_to(:store, Store, foreign_key: :store_id)
     has_one(:inventory, Inventory, foreign_key: :product_id, on_delete: :delete_all, on_replace: :update)
     timestamps()
@@ -18,9 +19,9 @@ defmodule NextDoor.Product do
 
   def new_product_changeset(product, params \\ %{}) do
     product
-    |> cast(params, [:name, :description, :price, :store_id])
+    |> cast(params, [:name, :description, :price, :image, :store_id])
     |> cast_assoc(:inventory, required: true)
-    |> validate_required([:name, :description, :price, :store_id])
+    |> validate_required([:name, :description, :price, :image, :store_id])
     |> foreign_key_constraint(:store_id)
     |> foreign_key_constraint(:product_id)
   end
@@ -28,7 +29,7 @@ defmodule NextDoor.Product do
   # TODO: Validate if the quantity is < 0
   def update_product_changeset(product, params \\ %{}) do
     product
-    |> cast(params, [:name, :price, :description])
+    |> cast(params, [:name, :price, :description, :image])
     |> cast_assoc(:inventory)
     |> foreign_key_constraint(:store_id)
     |> foreign_key_constraint(:product_id)

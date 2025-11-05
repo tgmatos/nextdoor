@@ -9,6 +9,7 @@ defmodule NextDoorWeb.ProductJSON do
       inserted_at: inserted_at,
       updated_at: updated_at,
       price: price,
+      image: image,
       inventory: %{
         quantity: quantity
       }
@@ -20,7 +21,8 @@ defmodule NextDoorWeb.ProductJSON do
       inserted_at: inserted_at,
       updated_at: updated_at,
       price: Decimal.to_float(price),
-      quantity: quantity
+      quantity: quantity,
+      image: Base.encode64(image || "")
     }
   end
 end
