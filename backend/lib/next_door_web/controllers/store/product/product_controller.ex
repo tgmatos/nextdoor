@@ -27,17 +27,6 @@ defmodule NextDoorWeb.ProductController do
     end
   end
 
-  defp decode_base64_image(base64_string) do
-    cleaned =
-      base64_string
-      |> String.replace(~r/^data:image\/[a-z]+;base64,/, "")
-    
-    case Base.decode64(cleaned) do
-      {:ok, binary} -> {:ok, binary}
-      :error -> {:error, :invalid_base64}
-    end
-  end
-
   def list(conn, %{"id" => store_id}) do
     with {:ok, products} <- Products.list_products(store_id) do
       result = NextDoorWeb.ProductJSON.show(%{products: products})
@@ -85,6 +74,17 @@ defmodule NextDoorWeb.ProductController do
       conn
       |> put_status(:ok)
       |> send_resp(:ok, "")
+    end
+  end
+
+  defp decode_base64_image(base64_string) do
+    cleaned =
+      base64_string
+      |> String.replace(~r/^data:image\/[a-z]+;base64,/, "")
+
+    case Base.decode64(cleaned) do
+      {:ok, binary} -> {:ok, binary}
+      :error -> {:error, :invalid_base64}
     end
   end
 end

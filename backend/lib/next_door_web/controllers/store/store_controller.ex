@@ -9,18 +9,20 @@ defmodule NextDoorWeb.StoreController do
         "name" => name,
         "description" => description,
         "telephone" => telephone,
-        "category" => category
+        "category" => category,
+        "image" => base64_image
       }) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
 
-    with {:ok, store} <-
-           Stores.create(%{
-             name: name,
-             description: description,
-             telephone: telephone,
-             category: category,
-             owner_id: owner_id
-           }) do
+    with {:ok, image} <- decode_base64_image(base64_image),
+         {:ok, store} <- Stores.create(%{
+                           name: name,
+                           description: description,
+                           telephone: telephone,
+                           category: category,
+                           image: image,
+                           owner_id: owner_id
+                         }) do
       render(conn, :create, %{store: store})
     end
   end
@@ -58,6 +60,12 @@ defmodule NextDoorWeb.StoreController do
 
   def update(conn, %{"store" => store}) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
+
+    store = with true <- Map.has_key?(store, "image"),
+                 {:ok, image} <- decode_base64_image(Map.get(store, "image")) do
+              Map.put(store, "image", image)
+    end
+
     with {:ok, s} <- Stores.update(store, owner_id) do
       render(conn, :show, %{store: s})
     end
@@ -71,4 +79,16 @@ defmodule NextDoorWeb.StoreController do
       |> send_resp(:ok, "")
     end
   end
+
+  defp decode_base64_image(base64_string) do
+    cleaned =
+      base64_string
+      |> String.replace(~r/^data:image\/[a-z]+;base64,/, "")
+    
+    case Base.decode64(cleaned) do
+      {:ok, binary} -> {:ok, binary}
+      :error -> {:error, :invalid_base64}
+    end
+  end
+
 end

@@ -12,6 +12,7 @@ defmodule NextDoor.Store do
     field(:description, :string)
     field(:telephone, :string)
     field(:category, :string)
+    field(:image, :binary)
     timestamps()
     belongs_to(:owner, Account, foreign_key: :owner_id)
     has_many(:orders, Order)
@@ -19,14 +20,14 @@ defmodule NextDoor.Store do
 
   def new_store_changeset(store, params \\ %{}) do
     store
-    |> cast(params, [:name, :description, :telephone, :category, :owner_id])
+    |> cast(params, [:name, :description, :telephone, :category, :image, :owner_id])
     |> validate_required([:name, :description, :telephone, :category, :owner_id])
     |> foreign_key_constraint(:owner_id)
   end
 
   def update_store_changeset(store, params \\ %{}) do
     store
-    |> cast(params, [:name, :description, :telephone, :category])
+    |> cast(params, [:name, :description, :telephone, :image, :category])
     |> validate_required([:owner_id])
     |> foreign_key_constraint(:owner_id)
   end

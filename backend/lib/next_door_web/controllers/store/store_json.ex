@@ -10,14 +10,16 @@ defmodule NextDoorWeb.StoreJSON do
       name: name,
       description: description,
       telephone: telephone,
-      category: category
+      category: category,
+      image: image
     } = store
 
     %{id: id,
       name: name,
       description: description,
       telephone: telephone,
-      category: category
+      category: category,
+      image: Base.encode64(image || "")
     }
   end
 end
