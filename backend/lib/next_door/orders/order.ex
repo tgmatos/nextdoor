@@ -24,4 +24,10 @@ defmodule NextDoor.Order do
     |> cast(params, [:total, :status_order, :payment_method, :account, :store, :address, :produc])
     |> validate_required([:total, :status_order, :payment_method, :account, :store, :address])
   end
+
+  def update_changeset(order, params \\ %{}) do
+    order
+    |> cast(params, [:status_order])
+    |> validate_required([:status_order])
+  end
 end

@@ -55,7 +55,7 @@ defmodule NextDoorWeb.Router do
       scope("/order") do
         get("/", OrderController, :list_orders_by_store)
         get("/:id", OrderController, :get_order_by_store)
-        #put("/:id", StoreController, :update_status_order)
+        patch("/:id", OrderController, :update_status_order)
       end
       resources("/product", ProductController, only: [:create, :update, :delete, :index])
     end

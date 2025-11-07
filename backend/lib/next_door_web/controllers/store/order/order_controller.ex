@@ -46,4 +46,21 @@ defmodule NextDoorWeb.OrderController do
       json(conn, result)
     end
   end
+
+  def update_status_order(conn, %{"id" => order_id, "before" => status_before, "after" => status_after}) do
+    %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
+
+    case Orders.update_status_order(order_id, owner_id, %{before: status_before, after: status_after}) do
+      {:ok, order} -> json(conn, %{id: order.id, total: order.total, status_order: order.status_order, payment_method: order.payment_method})
+      {:error, :invalid_transition} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Invalid status transition"})
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Order not found"})
+    end
+  end
 end
