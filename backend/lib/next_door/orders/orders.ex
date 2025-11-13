@@ -31,12 +31,12 @@ defmodule NextDoor.Orders do
   end
 
   def get_order_by_store(%{owner_id: owner_id, order_id: order_id}) do
-    result = from(s in Store,
-                  join: o in Order,
-                  on: s.id == o.store_id,
-                  where: s.owner_id == ^owner_id and o.id == ^order_id,
-                  select: o)
-    |> Repo.all
+    result = from(o in Order,
+		  join: s in Store,
+		  on: s.id == o.store_id,
+		  where: s.owner_id == ^owner_id and o.id == ^order_id,
+		  select: o)
+    |> Repo.one
     |> Repo.preload([order_product: [:product]])
 
     {:ok, result}
