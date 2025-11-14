@@ -1,23 +1,23 @@
-import Cookies from "js-cookie";
+import Cookies from 'js-cookie'
 
-const tokenKey: string = 'User-Token';
+const tokenKey: string = 'User-Token'
 
 export function getToken(): undefined | string {
-  return Cookies.get(tokenKey);
+  return Cookies.get(tokenKey)
 }
 
 export function setToken(token: string) {
-  Cookies.set(tokenKey, token);
+  Cookies.set(tokenKey, token)
 }
 
 export function removeToken() {
-  Cookies.remove(tokenKey);
+  Cookies.remove(tokenKey)
 }
 
 export function isAuthenticated(): boolean {
   if (getToken()) {
-    return true;
+    return true
   }
 
-  return false;
+  return false
 }
