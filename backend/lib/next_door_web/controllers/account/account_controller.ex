@@ -9,12 +9,12 @@ defmodule NextDoorWeb.AccountController do
       "email" => email,
       "username" => username,
       "password" => plain_password,
-      "address" => %{
+      "address" => [%{
         "number" => number,
         "street" => street,
         "neighborhood" => neighborhood,
         "cep" => cep
-      }
+      }]
     } = params
 
     with {:ok, token, _claims} <-

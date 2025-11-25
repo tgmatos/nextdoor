@@ -15,13 +15,21 @@ defmodule NextDoor.Address do
     many_to_many(:account, Account, join_through: "account_address")
   end
 
+  # def changeset(address, params \\ %{}) do
+  #   address
+  #   |> cast(params, [:address_number, :street, :neighborhood, :cep])
+  #   |> put_assoc(:account, [params.account])
+  #   |> validate_required([:address_number, :street, :neighborhood, :cep, :account])
+  # end
+
   def changeset(address, params \\ %{}) do
-    address
-    |> cast(params, [:address_number, :street, :neighborhood, :cep])
-    |> put_assoc(:account, [params.account])
-    |> validate_required([:address_number, :street, :neighborhood, :cep, :account])
+  address
+  |> cast(params, [:address_number, :street, :neighborhood, :cep])
+  |> validate_required([:address_number, :street, :neighborhood, :cep])
   end
 
+
+  
   def update_changeset(address, params \\ %{}) do
     address
     |> cast(params, [:address_number, :street, :neighborhood, :cep])
