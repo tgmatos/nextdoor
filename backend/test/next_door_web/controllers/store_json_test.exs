@@ -1,92 +1,53 @@
 defmodule NextDoorWeb.StoreJSONTest do
-  use NextDoorWeb.ConnCase, async: true
+  use ExUnit.Case, async: true
 
-  @email "test@gmail.com"
-  @username "test"
-  @password "KPc5@GrnA@2W@WSdoTKD9i%Up5G!wT!uKMvM9!*KPc5@GrnA@2W@WSdoTKD9i%Up5G!wT!uKMvM9!*"
+  alias NextDoor.Store
 
-  @store "Store Test"
-  @descr "Store Test Description"
-  @address "1234 Elm Street"
-  @phone "11223344556"
-  @category "VESTUARIO"
-
-  setup %{conn: conn} do
-    {:ok, token, _} =
-      NextDoor.Accounts.new_account(%{
-        email: @email,
-        username: @username,
-        plain_password: @password
-      })
-
-    conn = put_req_header(conn, "authorization", "Bearer #{token}")
-    {:ok, conn: conn}
+  defp store do
+    %Store{
+      id: "store-id",
+      name: "Store",
+      description: "description",
+      telephone: "11223344556",
+      category: "VESTUARIO",
+      image: "fake image binary"
+    }
   end
 
-  test "New Store", %{conn: conn} do
-    conn =
-      post(conn, ~p"/api/store", %{
-        name: @store,
-        description: @descr,
-        address: @address,
-        telephone: @phone,
-        category: @category
-      })
-
-    assert json_response(conn, 200)
+  defp formatted_store do
+    %{
+      id: "store-id",
+      name: "Store",
+      description: "description",
+      telephone: "11223344556",
+      category: "VESTUARIO",
+      image: Base.encode64("fake image binary")
+    }
   end
 
-  test "List Stores", %{conn: conn} do
-    post(conn, ~p"/api/store", %{
-      name: @store,
-      description: @descr,
-      address: @address,
-      telephone: @phone,
-      category: @category
-    })
-
-    conn = get(conn, ~p"/api/stores")
-
-    assert json_response(conn, 200)
-    assert is_list(json_response(conn, 200)["stores"])
+  test "create returns the store id" do
+    assert NextDoorWeb.StoreJSON.create(%{store: store()}) == %{id: "store-id"}
   end
 
-  test "Update Store", %{conn: conn} do
-    post(conn, ~p"/api/store", %{
-      name: @store,
-      description: @descr,
-      address: @address,
-      telephone: @phone,
-      category: @category
-    })
-
-    put(conn, ~p"/api/store", %{
-      store: %{
-        name: "updated store",
-        description: @descr,
-        address: @address,
-        telephone: @phone,
-        category: @category
-      }
-    })
-
-    result = case NextDoor.Repo.get_by(NextDoor.Store, name: "updated store") do
-      nil -> {:error, :updated_failed}
-      store -> {:ok, store}
-    end
-    assert  {:ok, _} = result
+  test "show formats the store with the image encoded" do
+    assert NextDoorWeb.StoreJSON.show(%{store: store()}) == formatted_store()
   end
 
-  test "Delete Store", %{conn: conn} do
-    post(conn, ~p"/api/store", %{
-      name: @store,
-      description: @descr,
-      address: @address,
-      telephone: @phone,
-      category: @category
-    })
+  test "update formats the store with the image encoded" do
+    assert NextDoorWeb.StoreJSON.update(%{store: store()}) == formatted_store()
+  end
 
-    conn = delete(conn, ~p"/api/store")
-    assert response(conn, 200)
+  test "index maps every store" do
+    assert NextDoorWeb.StoreJSON.index(%{stores: [store(), store()]}) ==
+             %{stores: [formatted_store(), formatted_store()]}
+  end
+
+  test "index handles an empty list" do
+    assert NextDoorWeb.StoreJSON.index(%{stores: []}) == %{stores: []}
+  end
+
+  test "show encodes a nil image as an empty string" do
+    store = %Store{store() | image: nil}
+    assert NextDoorWeb.StoreJSON.show(%{store: store}).image == ""
   end
 end

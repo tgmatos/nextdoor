@@ -6,11 +6,21 @@ defmodule NextDoor.Order do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
-  @derive {Jason.Encoder, except: [:account, :account_id, :store, :store_id, :address, :address_id, :products,:__meta__]}
+  @derive {Jason.Encoder,
+           except: [
+             :account,
+             :account_id,
+             :store,
+             :store_id,
+             :address,
+             :address_id,
+             :products,
+             :__meta__
+           ]}
   schema "orders" do
-    field :total, :decimal
-    field :status_order, :string
-    field :payment_method, :string
+    field(:total, :decimal)
+    field(:status_order, :string)
+    field(:payment_method, :string)
     belongs_to(:account, Account, foreign_key: :account_id)
     belongs_to(:store, Store, foreign_key: :store_id)
     belongs_to(:address, Address, foreign_key: :address_id)
@@ -21,7 +31,7 @@ defmodule NextDoor.Order do
 
   def changeset(orders, params \\ %{}) do
     orders
-    |> cast(params, [:total, :status_order, :payment_method, :account, :store, :address, :produc])
+    |> cast(params, [:total, :status_order, :payment_method])
     |> validate_required([:total, :status_order, :payment_method, :account, :store, :address])
   end
 

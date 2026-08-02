@@ -13,7 +13,13 @@ defmodule NextDoor.Product do
     field(:description, :string)
     field(:image, :binary)
     belongs_to(:store, Store, foreign_key: :store_id)
-    has_one(:inventory, Inventory, foreign_key: :product_id, on_delete: :delete_all, on_replace: :update)
+
+    has_one(:inventory, Inventory,
+      foreign_key: :product_id,
+      on_delete: :delete_all,
+      on_replace: :update
+    )
+
     timestamps()
   end
 

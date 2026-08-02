@@ -28,6 +28,7 @@ defmodule NextDoorWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import NextDoorWeb.ConnCase
+      import NextDoor.Fixtures
     end
   end
 

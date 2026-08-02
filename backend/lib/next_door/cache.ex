@@ -20,7 +20,6 @@ defmodule NextDoor.Cache do
     end
   end
 
-
   def get_by(table, clauses) do
     case Cachex.get(@cache, {table, clauses}) do
       {:ok, nil} -> get_from_repo_by(table, clauses)
@@ -38,7 +37,6 @@ defmodule NextDoor.Cache do
         {:ok, record}
     end
   end
-
 
   def get_from_query(query) do
     case Cachex.get(@cache, query) do
@@ -58,14 +56,13 @@ defmodule NextDoor.Cache do
     end
   end
 
-  
   def get_all(table) do
     case Cachex.get(@cache, table) do
       {:ok, nil} -> get_from_repo(table)
       {:ok, records} -> {:ok, records}
     end
   end
-    
+
   defp get_from_repo(table) do
     case Repo.all(table) do
       [] ->
@@ -75,5 +72,19 @@ defmodule NextDoor.Cache do
         Cachex.put(@cache, table, records)
         {:ok, records}
     end
+  end
+
+  def flush do
+    Cachex.clear(@cache)
+  end
+
+  def clear_view_cache(prefix) when is_binary(prefix) do
+    {:ok, keys} = Cachex.keys(@cache)
+
+    keys
+    |> Enum.filter(fn key -> is_binary(key) and String.starts_with?(key, prefix) end)
+    |> Enum.each(&Cachex.del(@cache, &1))
+
+    :ok
   end
 end

@@ -23,13 +23,11 @@ defmodule NextDoor.Address do
   # end
 
   def changeset(address, params \\ %{}) do
-  address
-  |> cast(params, [:address_number, :street, :neighborhood, :cep])
-  |> validate_required([:address_number, :street, :neighborhood, :cep])
+    address
+    |> cast(params, [:address_number, :street, :neighborhood, :cep])
+    |> validate_required([:address_number, :street, :neighborhood, :cep])
   end
 
-
-  
   def update_changeset(address, params \\ %{}) do
     address
     |> cast(params, [:address_number, :street, :neighborhood, :cep])

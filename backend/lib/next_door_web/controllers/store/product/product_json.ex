@@ -3,19 +3,21 @@ defmodule NextDoorWeb.ProductJSON do
   def show(%{products: products}), do: %{products: Enum.map(products, &format_product/1)}
 
   defp format_product(product) do
-    %{id: id,
+    %{
+      id: id,
       name: name,
       description: description,
       inserted_at: inserted_at,
       updated_at: updated_at,
       price: price,
       image: image,
-      inventory: %{
-        quantity: quantity
-      }
+      inventory: inventory
     } = product
 
-    %{id: id,
+    quantity = if inventory, do: inventory.quantity, else: nil
+
+    %{
+      id: id,
       name: name,
       description: description,
       inserted_at: inserted_at,
@@ -26,4 +28,3 @@ defmodule NextDoorWeb.ProductJSON do
     }
   end
 end
-

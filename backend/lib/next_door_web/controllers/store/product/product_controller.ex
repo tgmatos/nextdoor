@@ -1,28 +1,26 @@
 defmodule NextDoorWeb.ProductController do
   use NextDoorWeb, :controller
   alias NextDoor.Products
+  alias NextDoor.Cache
   @cache :nd_cache
 
-  def create(conn, %{
-        "product" => %{
-          "name" => name,
-          "description" => description,
-          "price" => price,
-          "quantity" => quantity,
-          "image" => base64_image,
-        }
-      }) do
+  action_fallback(NextDoorWeb.FallbackController)
+
+  def create(conn, params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
-    
-    with {:ok, image} <- decode_base64_image(base64_image),
+    product = params["product"] || %{}
+
+    with {:ok, image} <- decode_base64_image(product["image"]),
          {:ok, product} <-
            Products.create(owner_id, %{
-             name: name,
-             description: description,
-             price: price,
+             name: product["name"],
+             description: product["description"],
+             price: product["price"],
              image: image,
-             inventory: %{quantity: quantity}
+             inventory: %{quantity: product["quantity"]}
            }) do
+      Cache.clear_view_cache("view_cache:/api/stores")
+      Cache.clear_view_cache("view_cache:owner:#{owner_id}.")
       render(conn, :create, %{product: product})
     end
   end
@@ -39,43 +37,62 @@ defmodule NextDoorWeb.ProductController do
 
   def index(conn, _params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
+
     with {:ok, products} <- Products.index(owner_id) do
       result = NextDoorWeb.ProductJSON.show(%{products: products})
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
-      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value, expire: 60)
+
+      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value,
+        expire: 60
+      )
+
       json(conn, result)
     end
   end
-  
+
   def update(conn, %{"id" => id, "product" => product}) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
 
-    product =
-      case Map.has_key?(product, "quantity") do
-        true -> Map.put(product, "inventory", %{"quantity" => Map.get(product, "quantity")})
-        false -> product
-      end
-    
-    product = with true <- Map.has_key?(product, "image"),
-                   {:ok, img} <- decode_base64_image(Map.get(product, "image")) do
-                Map.put(product, "image", img)
-    end
-    
-    with {:ok, p} <- Products.update(owner_id, id, product) do
-      render(conn, :create, %{product: p})
+    with {:ok, product} <- prepare_product_params(product),
+         {:ok, product} <- Products.update(owner_id, id, product) do
+      Cache.clear_view_cache("view_cache:/api/stores")
+      Cache.clear_view_cache("view_cache:owner:#{owner_id}.")
+      render(conn, :create, %{product: product})
     end
   end
 
+  def update(_conn, _params), do: {:error, :missing_params}
+
   def delete(conn, %{"id" => product_id}) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
+
     with {:ok, _} <- Products.delete(product_id, owner_id) do
-      Cachex.del(@cache, "view_cache:owner:#{owner_id}./api/store/product")
+      Cache.clear_view_cache("view_cache:/api/stores")
+      Cache.clear_view_cache("view_cache:owner:#{owner_id}.")
+
       conn
-      |> put_status(:ok)
-      |> send_resp(:ok, "")
+      |> send_resp(:no_content, "")
     end
   end
+
+  defp prepare_product_params(product) do
+    product =
+      case Map.has_key?(product, "quantity") and not is_nil(product["quantity"]) do
+        true -> Map.put(product, "inventory", %{"quantity" => product["quantity"]})
+        false -> product
+      end
+
+    if Map.has_key?(product, "image") and not is_nil(product["image"]) do
+      with {:ok, image} <- decode_base64_image(product["image"]) do
+        {:ok, Map.put(product, "image", image)}
+      end
+    else
+      {:ok, Map.delete(product, "image")}
+    end
+  end
+
+  defp decode_base64_image(nil), do: {:error, :invalid_base64}
 
   defp decode_base64_image(base64_string) do
     cleaned =

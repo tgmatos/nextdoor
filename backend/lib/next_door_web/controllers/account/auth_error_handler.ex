@@ -1,14 +1,14 @@
 defmodule NextDoorWeb.AuthErrorHandler do
   import Plug.Conn
+  import Phoenix.Controller
 
   @behaviour Guardian.Plug.ErrorHandler
 
   @impl Guardian.Plug.ErrorHandler
-  def auth_error(conn, {type, _reason}, _opts) do
-    {_, body} = Jason.encode(%{error: type})
-
+  def auth_error(conn, {_type, _reason}, _opts) do
     conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(401, body)
+    |> put_status(401)
+    |> put_view(json: NextDoorWeb.ErrorJSON)
+    |> render(:"401")
   end
 end

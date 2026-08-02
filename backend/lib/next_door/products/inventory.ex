@@ -16,6 +16,6 @@ defmodule NextDoor.Inventory do
     inventory
     |> cast(params, [:quantity])
     |> validate_required([:quantity])
-    |>foreign_key_constraint(:product_id)
+    |> foreign_key_constraint(:product_id)
   end
 end

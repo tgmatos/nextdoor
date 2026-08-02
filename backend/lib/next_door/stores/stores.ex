@@ -1,6 +1,6 @@
 defmodule NextDoor.Stores do
   alias NextDoor.{Store, Repo}
-  #import Ecto.Query
+  alias NextDoor.Validators
 
   def create(attr \\ %{}) do
     %Store{}
@@ -8,12 +8,10 @@ defmodule NextDoor.Stores do
     |> Repo.insert()
     |> case do
       {:ok, store} -> {:ok, store}
-      {:error, result_errors} -> result_errors.errors
+      {:error, changeset} -> {:error, changeset}
     end
   end
 
-  # TODO: A way to select stores by type
-  # TODO: Add Cachex
   def index do
     case Repo.all(Store) do
       nil -> {:ok, nil}
@@ -21,17 +19,14 @@ defmodule NextDoor.Stores do
     end
   end
 
-  def index(category) do
-    case Repo.get_by(Store, %{category: category}) do
-      nil -> {:ok, nil}
-      stores -> {:ok, stores}
-    end
-  end
-
   def get_by_id(id) do
-    case Repo.get(Store, id) do
-      nil -> {:error, :store_not_found}
-      store -> {:ok, store}
+    with {:ok, _} <- Validators.parse_uuid(id) do
+      case Repo.get(Store, id) do
+        nil -> {:error, :store_not_found}
+        store -> {:ok, store}
+      end
+    else
+      {:error, :invalid_uuid} -> {:error, :invalid_uuid}
     end
   end
 
@@ -43,15 +38,21 @@ defmodule NextDoor.Stores do
   end
 
   def show(id) do
-    case Repo.get(Store, id) do
-      nil -> {:error, :store_not_found}
-      store -> {:ok, store}
+    with {:ok, _} <- Validators.parse_uuid(id) do
+      case Repo.get(Store, id) do
+        nil -> {:error, :store_not_found}
+        store -> {:ok, store}
+      end
+    else
+      {:error, :invalid_uuid} -> {:error, :invalid_uuid}
     end
   end
 
   def update(record, owner_id) do
     case Repo.get_by(Store, %{owner_id: owner_id}) do
-      nil -> {:error, :store_not_found}
+      nil ->
+        {:error, :store_not_found}
+
       store ->
         Store.update_store_changeset(store, record)
         |> Repo.update()
@@ -59,7 +60,9 @@ defmodule NextDoor.Stores do
   end
 
   def delete(owner_id) do
-    Repo.get_by(Store, owner_id: owner_id)
-     |> Repo.delete()
+    case Repo.get_by(Store, owner_id: owner_id) do
+      nil -> {:error, :store_not_found}
+      store -> Repo.delete(store)
+    end
   end
 end

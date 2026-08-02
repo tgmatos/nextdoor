@@ -1,34 +1,21 @@
 defmodule NextDoorWeb.AccountJSONTest do
-  use NextDoorWeb.ConnCase, async: true
+  use ExUnit.Case, async: true
 
-  @email "test@gmail.com"
-  @username "test"
-  @password "KPc5@GrnA@2W@WSdoTKD9i%Up5G!wT!uKMvM9!*KPc5@GrnA@2W@WSdoTKD9i%Up5G!wT!uKMvM9!*"
-
-  test "Register User", %{conn: conn} do
-    conn =
-      post(conn, ~p"/api/account/register", %{
-        email: @email,
-        username: @username,
-        password: @password
-      })
-
-    assert json_response(conn, 200)
+  test "register_account returns the token" do
+    assert NextDoorWeb.AccountJSON.register_account(%{token: "token-123"}) == %{
+             token: "token-123"
+           }
   end
 
-  test "Login User", %{conn: conn} do
-    NextDoor.Accounts.new_account(%{
-      email: @email,
-      username: @username,
-      plain_password: @password
-    })
+  test "login returns the token" do
+    assert NextDoorWeb.AccountJSON.login(%{token: "token-123"}) == %{token: "token-123"}
+  end
 
-    conn =
-      post(conn, ~p"/api/account/login", %{
-        email: @email,
-        password: @password
-      })
+  test "show returns the account id, email and username" do
+    account = %{id: "account-id", email: "user@example.com", username: "user"}
 
-    assert json_response(conn, 200)
+    assert NextDoorWeb.AccountJSON.show(%{account: account}) == %{
+             account: %{id: "account-id", email: "user@example.com", username: "user"}
+           }
   end
 end

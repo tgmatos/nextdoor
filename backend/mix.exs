@@ -5,11 +5,14 @@ defmodule NextDoor.MixProject do
     [
       app: :next_door,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.19",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
+      test_coverage: [summary: [threshold: 85]],
       deps: deps()
+      # compilers: [:phoenix_swagger]
+      # compilers: [:phoenix, :gettext] ++ Mix.compilers ++ [:phoenix_swagger],
     ]
   end
 
@@ -32,23 +35,26 @@ defmodule NextDoor.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.7.14"},
-      {:phoenix_ecto, "~> 4.5"},
-      {:ecto_sql, "~> 3.10"},
-      {:ecto_sqlite3, "~> 0.17"},
-      {:postgrex, ">= 0.0.0"},
-      {:swoosh, "~> 1.5"},
-      {:finch, "~> 0.13"},
-      {:telemetry_metrics, "~> 1.0"},
-      {:telemetry_poller, "~> 1.0"},
-      {:jason, "~> 1.2"},
-      {:dns_cluster, "~> 0.1.1"},
-      {:bandit, "~> 1.5"},
-      {:guardian, "~> 2.3"},
+      {:phoenix, "~> 1.8"},
+      {:phoenix_ecto, "~> 4.7"},
+      {:ecto_sql, "~> 3.14"},
+      {:postgrex, "~> 0.22"},
+      {:swoosh, "~> 1.27"},
+      {:finch, "~> 0.23"},
+      {:telemetry_metrics, "~> 1.1"},
+      {:telemetry_poller, "~> 1.3"},
+      {:jason, "~> 1.4"},
+      {:dns_cluster, "~> 0.2"},
+      {:bandit, "~> 1.12"},
+      {:guardian, "~> 2.4"},
       {:argon2_elixir, "~> 4.1"},
-      {:cachex, "~> 4.0"},
-      {:phoenix_live_dashboard, "~> 0.7"},
-      {:corsica, "~> 2.1"}
+      {:cachex, "~> 4.1"},
+      {:phoenix_live_dashboard, "~> 0.8"},
+      {:corsica, "~> 2.1"},
+      {:ecto_erd, "~> 0.7"}
+      # {:phoenix_swagger, "~> 0.8.5"},
+      # {:open_api_spex, "~> 3.22"},
+      # {:poison, "~> 6.0"}
     ]
   end
 
@@ -60,10 +66,7 @@ defmodule NextDoor.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-      "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      setup: ["deps.get"]
     ]
   end
 end

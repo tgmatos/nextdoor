@@ -12,13 +12,19 @@ defmodule NextDoor.Account do
     field(:password, :string, redact: true)
     field(:plain_password, :string, virtual: true, redact: true)
     has_one(:store, Store, foreign_key: :owner_id)
-    many_to_many(:address, Address, join_through: "account_address", join_keys: [account_id: :id, address_id: :id], on_delete: :delete_all)
+
+    many_to_many(:address, Address,
+      join_through: "account_address",
+      join_keys: [account_id: :id, address_id: :id],
+      on_delete: :delete_all
+    )
   end
 
   def new_account_changeset(user, params \\ %{}) do
     user
     |> cast(params, [:email, :plain_password, :username])
     |> validate_required([:email, :plain_password, :username])
+    |> unique_constraint(:email, name: :account_email_key)
     |> register_validate_password()
     |> cast_assoc(:address, required: true)
   end

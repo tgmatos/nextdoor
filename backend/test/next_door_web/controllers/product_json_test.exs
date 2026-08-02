@@ -1,54 +1,59 @@
-defmodule NextDoorWeb.PoductJSONTest do
-  use NextDoorWeb.ConnCase, async: true
+defmodule NextDoorWeb.ProductJSONTest do
+  use ExUnit.Case, async: true
 
-  @email "test@gmail.com"
-  @username "test"
-  @password "KPc5@GrnA@2W@WSdoTKD9i%Up5G!wT!uKMvM9!*KPc5@GrnA@2W@WSdoTKD9i%Up5G!wT!uKMvM9!*"
+  alias NextDoor.{Product, Inventory}
 
-  @store "Store Test"
-  @descr "Store Test Description"
-  @address "1234 Elm Street"
-  @phone "11223344556"
-  @category "VESTUARIO"
+  @ts ~U[2024-01-01 00:00:00Z]
 
-  @product "Product Test"
-  @pdescr "Product Test Description"
-  @price 20.0
-  @stock 300
-
-  setup %{conn: conn} do
-    {:ok, token, _} =
-      NextDoor.Accounts.new_account(%{
-        email: @email,
-        username: @username,
-        plain_password: @password
-      })
-
-    conn = put_req_header(conn, "authorization", "Bearer #{token}")
-
-    post(conn, ~p"/api/store", %{
-      name: @store,
-      description: @descr,
-      address: @address,
-      telephone: @phone,
-      category: @category
-    })
-    |> response(200)
-
-    {:ok, conn: conn}
+  defp product do
+    %Product{
+      id: "product-id",
+      name: "Product",
+      description: "description",
+      price: Decimal.new("20.00"),
+      image: "fake image binary",
+      inserted_at: @ts,
+      updated_at: @ts,
+      inventory: %Inventory{quantity: 300}
+    }
   end
 
-  test "Add Product", %{conn: conn} do
-    conn =
-      post(conn, ~p"/api/store/product/", %{
-        product: %{
-          name: @product,
-          description: @pdescr,
-          price: @price,
-          stock: @stock
-        }
-      })
+  defp formatted_product do
+    %{
+      id: "product-id",
+      name: "Product",
+      description: "description",
+      inserted_at: @ts,
+      updated_at: @ts,
+      price: 20.0,
+      quantity: 300,
+      image: Base.encode64("fake image binary")
+    }
+  end
 
-    assert json_response(conn, 200)
+  test "create formats a product" do
+    assert NextDoorWeb.ProductJSON.create(%{product: product()}) == %{
+             product: formatted_product()
+           }
+  end
+
+  test "show maps every product" do
+    assert NextDoorWeb.ProductJSON.show(%{products: [product(), product()]}) ==
+             %{products: [formatted_product(), formatted_product()]}
+  end
+
+  test "show handles an empty list" do
+    assert NextDoorWeb.ProductJSON.show(%{products: []}) == %{products: []}
+  end
+
+  test "price is converted from decimal to float" do
+    result = NextDoorWeb.ProductJSON.create(%{product: product()})
+    assert is_float(result.product.price)
+    assert result.product.price == 20.0
+  end
+
+  test "image is base64 encoded" do
+    result = NextDoorWeb.ProductJSON.create(%{product: product()})
+    assert result.product.image == Base.encode64("fake image binary")
   end
 end

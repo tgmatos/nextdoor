@@ -45,6 +45,5 @@ defmodule NextDoorWeb.Endpoint do
   plug(Plug.Head)
   plug(Plug.Session, @session_options)
   plug(NextDoorWeb.CORS)
-  plug(NextDoorWeb.CachePlug)
   plug(NextDoorWeb.Router)
 end
