@@ -23,6 +23,7 @@ defmodule NextDoorWeb.Router do
     scope("/stores") do
       get("/", StoreController, :index)
       get("/:id", StoreController, :get_by_id)
+
       scope("/:id/product") do
         get("/", ProductController, :list)
       end
@@ -32,11 +33,13 @@ defmodule NextDoorWeb.Router do
   # Authenticated routes
   scope("/api", NextDoorWeb) do
     pipe_through([:api, :auth])
-    
+
     resources("/account", AccountController,
-              only: [:show, :delete],
-              singleton: true) do
+      only: [:show, :delete],
+      singleton: true
+    ) do
       patch("/", AccountController, :update)
+
       scope("/order") do
         get("/", OrderController, :get_orders_by_customer)
         get("/:id", OrderController, :get_order_by_customer)
@@ -50,13 +53,16 @@ defmodule NextDoorWeb.Router do
     end
 
     resources("/store", StoreController,
-              only: [:create, :update, :delete, :show],
-              singleton: true) do
+      only: [:create, :update, :delete, :show],
+      singleton: true
+    ) do
       scope("/order") do
+        post("/:id", OrderController, :create_order)
         get("/", OrderController, :list_orders_by_store)
         get("/:id", OrderController, :get_order_by_store)
         patch("/:id", OrderController, :update_status_order)
       end
+
       resources("/product", ProductController, only: [:create, :update, :delete, :index])
     end
   end
@@ -68,7 +74,7 @@ defmodule NextDoorWeb.Router do
       live_dashboard("/dashboard", metrics: NextDoorWeb.Telemetry)
     end
 
-    scope("/dev")do
+    scope("/dev") do
       pipe_through([:fetch_session, :protect_from_forgery])
 
       forward("/mailbox", Plug.Swoosh.MailboxPreview)

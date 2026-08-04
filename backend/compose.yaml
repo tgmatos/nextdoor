@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: g%OoLM8075Xn9CvMnP2FSCKv
+      POSTGRES_USER: nextdoor
+      POSTGRES_DB: nextdoor_dev
+    ports:
+      - "5432:5432"

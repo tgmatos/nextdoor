@@ -6,6 +6,20 @@ defmodule NextDoorWeb.OrderController do
 
   action_fallback(NextDoorWeb.FallbackController)
 
+  def create_order(conn, %{"id" => store_id} = params) do
+    %{"sub" => customer_id} = Guardian.Plug.current_claims(conn)
+
+    with {:ok, order} <-
+           Orders.create_order(%{
+             store_id: store_id,
+             customer_id: customer_id,
+             products: params["products"],
+             payment_method: params["payment_method"]
+           }) do
+      json(conn, NextDoorWeb.OrderJson.create(%{order: order}))
+    end
+  end
+
   def list_orders_by_store(conn, _params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
 

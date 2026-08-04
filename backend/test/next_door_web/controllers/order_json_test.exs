@@ -17,28 +17,41 @@ defmodule NextDoorWeb.OrderJsonTest do
     }
   end
 
-  test "show formats the order products" do
+  test "show formats the order with client, address and product quantities" do
     order = %Order{
       id: "order-id",
       total: Decimal.new("10.00"),
       status_order: "ESPERANDO",
       payment_method: "PIX",
-      order_product: [%OrderProduct{product: product()}]
+      inserted_at: @ts,
+      updated_at: @ts,
+      order_product: [%OrderProduct{product: product(), quantity: 2}]
     }
 
     result = NextDoorWeb.OrderJson.show(%{order: order})
 
-    assert result.order_product == [
-             %{
-               id: "product-id",
-               name: "Product",
-               description: "description",
-               inserted_at: @ts,
-               updated_at: @ts,
-               price: 10.0,
-               image: Base.encode64("fake image binary")
-             }
-           ]
+    assert result == %{
+             id: "order-id",
+             total: Decimal.new("10.00"),
+             inserted_at: @ts,
+             updated_at: @ts,
+             payment_method: "PIX",
+             status_order: "ESPERANDO",
+             client: nil,
+             address: nil,
+             order_product: [
+               %{
+                 id: "product-id",
+                 name: "Product",
+                 description: "description",
+                 inserted_at: @ts,
+                 updated_at: @ts,
+                 price: 10.0,
+                 image: Base.encode64("fake image binary"),
+                 quantity: 2
+               }
+             ]
+           }
   end
 
   test "show returns an empty product list when there are no order products" do

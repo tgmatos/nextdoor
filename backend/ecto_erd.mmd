@@ -1,0 +1,71 @@
+erDiagram
+  schema_migrations {
+    integer version PK
+    timestamp inserted_at
+  }
+  account {
+    uuid id PK
+    varchar email
+    varchar username
+    varchar password
+  }
+  address {
+    uuid id PK
+    varchar address_number
+    varchar street
+    varchar neighborhood
+    varchar cep
+  }
+  inventory {
+    uuid product_id PK
+    integer quantity
+  }
+  orders {
+    uuid id PK
+    decimal total
+    varchar status_order
+    varchar payment_method
+    uuid account_id
+    uuid store_id
+    uuid address_id
+    timestamp inserted_at
+    timestamp updated_at
+  }
+  order_product {
+    integer quantity
+    uuid order_id PK
+    uuid product_id PK
+  }
+  product {
+    uuid id PK
+    varchar name
+    decimal price
+    varchar description
+    uuid store_id
+    timestamp inserted_at
+    timestamp updated_at
+  }
+  store {
+    uuid id PK
+    varchar name
+    varchar description
+    varchar telephone
+    varchar category
+    timestamp inserted_at
+    timestamp updated_at
+    uuid owner_id
+  }
+  account_address {
+    uuid account_id
+    uuid address_id
+  }
+  account ||--|{ account_address : ""
+  account ||--|{ orders : ""
+  account ||--o| store : ""
+  address ||--|{ account_address : ""
+  address ||--|{ orders : ""
+  orders ||--|{ order_product : ""
+  product ||--o| inventory : ""
+  product ||--|{ order_product : ""
+  store ||--|{ orders : ""
+  store ||--|{ product : ""

@@ -50,6 +50,30 @@ defmodule NextDoorWeb.FallbackController do
     |> json(%{errors: %{detail: "missing required parameters"}})
   end
 
+  def call(conn, {:error, :invalid_payload}) do
+    conn
+    |> put_status(422)
+    |> json(%{errors: %{detail: "invalid payload"}})
+  end
+
+  def call(conn, {:error, :address_not_found}) do
+    conn
+    |> put_status(422)
+    |> json(%{errors: %{detail: "customer has no address"}})
+  end
+
+  def call(conn, {:error, :product_not_found}) do
+    conn
+    |> put_status(422)
+    |> json(%{errors: %{detail: "one or more products were not found"}})
+  end
+
+  def call(conn, {:error, :insufficient_stock}) do
+    conn
+    |> put_status(422)
+    |> json(%{errors: %{detail: "insufficient stock"}})
+  end
+
   def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
     conn
     |> put_status(422)

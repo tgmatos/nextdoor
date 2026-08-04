@@ -22,6 +22,12 @@ config :next_door, NextDoorWeb.Endpoint,
   pubsub_server: NextDoor.PubSub,
   live_view: [signing_salt: "3auNqBwi"]
 
+# config :next_door, :phoenix_swagger,
+#        json_library: Jason,
+#        swagger_files: %{
+#          "swagger.json" => [router: NextDoorWeb.Router]
+#        }
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails
