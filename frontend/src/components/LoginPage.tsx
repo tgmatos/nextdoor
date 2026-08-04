@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Store } from '../types';
 import { loginAccount } from '../api/client';
-import { Store as StoreIcon, Lock, Mail, Eye, EyeOff, LogIn, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Store as StoreIcon, Lock, Mail, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface LoginPageProps {
   store: Store | null;
@@ -29,7 +29,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ store, onLogin, onGoToRegi
     setIsLoading(true);
 
     try {
-      await loginAccount({ email, password });
+      await loginAccount({ email, password, remember: rememberMe });
       setIsLoading(false);
       onLogin(email);
     } catch (err: any) {

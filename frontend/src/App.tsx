@@ -10,6 +10,7 @@ import { InventoryPage } from './components/InventoryPage';
 import { ProductDetailsPanel } from './components/ProductDetailsPanel';
 import { AddProductModal } from './components/AddProductModal';
 import { StoreProfilePage } from './components/StoreProfilePage';
+import { Toast } from './components/Toast';
 import { 
   fetchStoreOrders, 
   fetchOrderDetails, 
@@ -27,9 +28,9 @@ import {
   updateAddress,
   logoutAccount,
   getAuthToken,
-  clearAuthToken
+  clearAuthToken,
+  onUnauthorized
 } from './api/client';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('orders');
@@ -72,6 +73,9 @@ export default function App() {
       setOrders(data);
     } catch (err: any) {
       console.error('Error fetching orders:', err);
+      if (err?.status !== 401) {
+        showToast(err?.message || 'Erro ao carregar pedidos', 'error');
+      }
     } finally {
       setIsLoadingOrders(false);
     }
@@ -84,6 +88,9 @@ export default function App() {
       setProducts(data);
     } catch (err: any) {
       console.error('Error fetching products:', err);
+      if (err?.status !== 401) {
+        showToast(err?.message || 'Erro ao carregar produtos', 'error');
+      }
     } finally {
       setIsLoadingProducts(false);
     }
@@ -93,15 +100,18 @@ export default function App() {
     setIsLoadingProfile(true);
     try {
       const [s, a, addr] = await Promise.all([
-        fetchStoreProfile().catch(() => null),
-        fetchAccount().catch(() => null),
-        fetchAddresses().catch(() => [])
+        fetchStoreProfile().catch((e: any) => e?.status === 401 ? Promise.reject(e) : null),
+        fetchAccount().catch((e: any) => e?.status === 401 ? Promise.reject(e) : null),
+        fetchAddresses().catch((e: any) => e?.status === 401 ? Promise.reject(e) : [])
       ]);
       if (s) setStore(s);
       if (a) setAccount(a);
       if (addr) setAddresses(addr);
     } catch (err: any) {
       console.error('Error loading store profile:', err);
+      if (err?.status !== 401) {
+        showToast(err?.message || 'Erro ao carregar perfil da loja', 'error');
+      }
     } finally {
       setIsLoadingProfile(false);
     }
@@ -114,6 +124,30 @@ export default function App() {
       loadProfile();
     }
   }, [isAuthenticated, loadOrders, loadProducts, loadProfile]);
+
+  // Auto-refresh orders every 15s while on the orders tab
+  useEffect(() => {
+    if (!isAuthenticated || activeTab !== 'orders') return;
+    const interval = setInterval(() => {
+      loadOrders();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, activeTab, loadOrders]);
+
+  // Force logout when the session expires (401)
+  useEffect(() => {
+    onUnauthorized(() => {
+      setIsAuthenticated(false);
+      setAuthMode('login');
+      setStore(null);
+      setAccount(null);
+      setOrders([]);
+      setProducts([]);
+      setSelectedOrder(null);
+      setSelectedProduct(null);
+      showToast('Sessão expirada. Faça login novamente.', 'error');
+    });
+  }, []);
 
   // Handle Order Selection & Details
   const handleSelectOrder = async (order: Order) => {
@@ -276,20 +310,7 @@ export default function App() {
   if (!isAuthenticated) {
     return (
       <>
-        {toast && (
-          <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-3 duration-200">
-            <div className={`px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 border text-xs font-bold text-white ${
-              toast.type === 'success' ? 'bg-[#5A5A40] border-[#4a4a34]' : 'bg-rose-700 border-rose-800'
-            }`}>
-              {toast.type === 'success' ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
-              ) : (
-                <AlertCircle className="w-4 h-4 text-white shrink-0" />
-              )}
-              <span>{toast.message}</span>
-            </div>
-          </div>
-        )}
+        <Toast toast={toast} />
 
         {authMode === 'register' ? (
           <RegisterPage
@@ -311,20 +332,7 @@ export default function App() {
     <div className="min-h-screen bg-[#fdfdfb] text-[#3d3d33] flex flex-col md:flex-row font-sans">
       
       {/* Toast Floating Notification */}
-      {toast && (
-        <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <div className={`px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 border text-xs font-bold text-white ${
-            toast.type === 'success' ? 'bg-[#5A5A40] border-[#4a4a34]' : 'bg-rose-700 border-rose-800'
-          }`}>
-            {toast.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-white shrink-0" />
-            )}
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
+      <Toast toast={toast} />
 
       {/* Requirement: Left Sidebar Navigation with Top Store Image Button */}
       <Sidebar

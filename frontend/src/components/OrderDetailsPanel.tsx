@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { Order, OrderStatusType } from '../types';
+import { formatDate, paymentMethodLabel } from '../utils';
+import { useDialog } from '../hooks';
 import { 
   X, 
   Copy, 
   Check, 
   User, 
-  Mail, 
   MapPin, 
-  Clock, 
   CreditCard, 
-  CheckCircle2, 
-  XCircle, 
-  Truck, 
-  PackageCheck, 
   AlertCircle,
   RefreshCw,
   ShoppingBag
@@ -33,6 +29,7 @@ export const OrderDetailsPanel: React.FC<OrderDetailsPanelProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const dialogRef = useDialog(onClose);
 
   if (!order) return null;
 
@@ -40,22 +37,6 @@ export const OrderDetailsPanel: React.FC<OrderDetailsPanelProps> = ({
     navigator.clipboard.writeText(order.id);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }).format(new Date(dateStr));
-    } catch {
-      return dateStr;
-    }
   };
 
   const currentStatus = order.status_order || order.status || 'ESPERANDO';
@@ -99,6 +80,9 @@ export const OrderDetailsPanel: React.FC<OrderDetailsPanelProps> = ({
 
   const nextActions = getNextActions(currentStatus);
 
+  const clientName = order.client?.username || 'Anônimo';
+  const clientUsername = order.client?.username;
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-xs flex justify-end transition-opacity">
       
@@ -109,7 +93,14 @@ export const OrderDetailsPanel: React.FC<OrderDetailsPanelProps> = ({
       />
 
       {/* Slide-over Right Panel */}
-      <div className="relative w-full max-w-lg bg-white shadow-2xl h-full flex flex-col z-10 border-l border-slate-200/80 animate-in slide-in-from-right duration-200">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Detalhes do Pedido"
+        className="relative w-full max-w-lg bg-white shadow-2xl h-full flex flex-col z-10 border-l border-slate-200/80 animate-in slide-in-from-right duration-200 focus:outline-none"
+      >
         
         {/* Panel Header */}
         <div className="p-5 bg-white text-[#3d3d33] flex items-center justify-between border-b border-[#e5e5df]">
@@ -125,6 +116,7 @@ export const OrderDetailsPanel: React.FC<OrderDetailsPanelProps> = ({
                 onClick={handleCopyUUID}
                 className="text-[#8a8a78] hover:text-[#5A5A40] transition-colors p-1 rounded-lg hover:bg-[#f5f5f0]"
                 title="Copiar UUID do pedido"
+                aria-label="Copiar UUID do pedido"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
@@ -134,6 +126,7 @@ export const OrderDetailsPanel: React.FC<OrderDetailsPanelProps> = ({
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-[#f5f5f0] text-[#8a8a78] hover:text-[#3d3d33] hover:bg-[#ebebe5] flex items-center justify-center transition-colors"
+            aria-label="Fechar painel de detalhes"
           >
             <X className="w-5 h-5" />
           </button>
@@ -197,20 +190,20 @@ export const OrderDetailsPanel: React.FC<OrderDetailsPanelProps> = ({
             <div className="bg-white p-4 rounded-2xl border border-[#e5e5df] shadow-xs space-y-2.5 text-xs text-[#3d3d33]">
               <div className="flex justify-between items-center pb-2 border-b border-[#f0f0eb]">
                 <span className="text-[#8a8a78] font-semibold">Nome do Cliente:</span>
-                <span className="font-bold text-[#3d3d33]">{order.customer_name || 'Anônimo'}</span>
+                <span className="font-bold text-[#3d3d33]">{clientName}</span>
               </div>
 
-              {order.customer_email && (
+              {order.client?.email && (
                 <div className="flex justify-between items-center pb-2 border-b border-[#f0f0eb]">
                   <span className="text-[#8a8a78] font-semibold">E-mail:</span>
-                  <span className="font-medium text-[#3d3d33]">{order.customer_email}</span>
+                  <span className="font-medium text-[#3d3d33]">{order.client.email}</span>
                 </div>
               )}
 
-              {order.customer_username && (
+              {clientUsername && clientUsername !== clientName && (
                 <div className="flex justify-between items-center">
                   <span className="text-[#8a8a78] font-semibold">Usuário:</span>
-                  <span className="font-mono text-[#5A5A40]">@{order.customer_username}</span>
+                  <span className="font-mono text-[#5A5A40]">@{clientUsername}</span>
                 </div>
               )}
             </div>
@@ -254,7 +247,7 @@ export const OrderDetailsPanel: React.FC<OrderDetailsPanelProps> = ({
               <span className="text-[#3d3d33] font-semibold">Forma de Pagamento:</span>
             </div>
             <span className="font-bold text-[#5A5A40] bg-white px-3 py-1 rounded-full border border-[#e5e5df]">
-              {order.payment_method}
+              {paymentMethodLabel(order.payment_method)}
             </span>
           </div>
 

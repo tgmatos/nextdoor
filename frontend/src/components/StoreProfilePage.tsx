@@ -10,10 +10,7 @@ import {
   Image as ImageIcon, 
   RefreshCw, 
   Check, 
-  AlertCircle, 
-  Trash2,
-  Lock,
-  Plus
+  AlertCircle
 } from 'lucide-react';
 
 interface StoreProfilePageProps {
@@ -63,7 +60,6 @@ export const StoreProfilePage: React.FC<StoreProfilePageProps> = ({
   const [isSavingStore, setIsSavingStore] = useState(false);
   const [isSavingAccount, setIsSavingAccount] = useState(false);
   const [isSavingAddr, setIsSavingAddr] = useState(false);
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   // Sync Store State
   useEffect(() => {

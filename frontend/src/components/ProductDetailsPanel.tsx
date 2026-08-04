@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
+import { formatDate } from '../utils';
+import { useDialog } from '../hooks';
 import { 
   X, 
   Copy, 
   Check, 
-  Package, 
-  DollarSign, 
   Plus, 
   Minus, 
   Save, 
   Trash2, 
-  Clock, 
   Image as ImageIcon,
   AlertCircle,
   RefreshCw
@@ -41,6 +40,7 @@ export const ProductDetailsPanel: React.FC<ProductDetailsPanelProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const dialogRef = useDialog(onClose);
 
   // Sync state when product changes
   useEffect(() => {
@@ -62,22 +62,6 @@ export const ProductDetailsPanel: React.FC<ProductDetailsPanelProps> = ({
     navigator.clipboard.writeText(product.id);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }).format(new Date(dateStr));
-    } catch {
-      return dateStr;
-    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -136,7 +120,14 @@ export const ProductDetailsPanel: React.FC<ProductDetailsPanelProps> = ({
       />
 
       {/* Slide-over Right Panel */}
-      <div className="relative w-full max-w-lg bg-white shadow-2xl h-full flex flex-col z-10 border-l border-slate-200/80 animate-in slide-in-from-right duration-200">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detalhes do Produto ${product.name}`}
+        className="relative w-full max-w-lg bg-white shadow-2xl h-full flex flex-col z-10 border-l border-slate-200/80 animate-in slide-in-from-right duration-200 focus:outline-none"
+      >
         
         {/* Panel Header */}
         <div className="p-5 bg-white text-[#3d3d33] flex items-center justify-between border-b border-[#e5e5df]">
@@ -152,6 +143,7 @@ export const ProductDetailsPanel: React.FC<ProductDetailsPanelProps> = ({
                 onClick={handleCopyUUID}
                 className="text-[#8a8a78] hover:text-[#5A5A40] transition-colors p-1 rounded-lg hover:bg-[#f5f5f0]"
                 title="Copiar UUID do produto"
+                aria-label="Copiar UUID do produto"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
@@ -161,6 +153,7 @@ export const ProductDetailsPanel: React.FC<ProductDetailsPanelProps> = ({
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-[#f5f5f0] text-[#8a8a78] hover:text-[#3d3d33] hover:bg-[#ebebe5] flex items-center justify-center transition-colors"
+            aria-label="Fechar painel de detalhes do produto"
           >
             <X className="w-5 h-5" />
           </button>

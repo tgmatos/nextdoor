@@ -17,12 +17,16 @@ defmodule NextDoor.Orders do
       from(s in Store,
         join: o in Order,
         on: s.id == o.store_id,
+        join: a in assoc(o, :account),
         where: s.owner_id == ^owner_id,
         select: %{
           id: o.id,
           total: o.total,
           payment_method: o.payment_method,
-          status: o.status_order
+          status: o.status_order,
+          inserted_at: o.inserted_at,
+          updated_at: o.updated_at,
+          client: %{id: a.id, username: a.username, email: a.email}
         }
       )
       |> Repo.all()

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { X, Package, DollarSign, Image as ImageIcon, Save, RefreshCw, AlertCircle } from 'lucide-react';
+import { useDialog } from '../hooks';
+import { X, Package, Image as ImageIcon, Save, RefreshCw, AlertCircle } from 'lucide-react';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const [quantity, setQuantity] = useState<number>(10);
   const [image, setImage] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const dialogRef = useDialog(onClose, isOpen);
 
   if (!isOpen) return null;
 
@@ -67,7 +69,14 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-[#3d3d33]/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#e5e5df] animate-in fade-in zoom-in duration-200">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Cadastrar Novo Produto"
+        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-[#e5e5df] animate-in fade-in zoom-in duration-200 focus:outline-none"
+      >
         
         {/* Modal Header */}
         <div className="p-5 bg-white text-[#3d3d33] flex items-center justify-between border-b border-[#e5e5df]">
@@ -84,6 +93,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-[#f5f5f0] text-[#8a8a78] hover:text-[#3d3d33] hover:bg-[#ebebe5] flex items-center justify-center transition-colors"
+            aria-label="Fechar modal de cadastro de produto"
           >
             <X className="w-5 h-5" />
           </button>

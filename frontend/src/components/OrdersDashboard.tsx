@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Order, SortField, SortDirection } from '../types';
+import { formatDate, paymentMethodLabel } from '../utils';
 import { 
   Search, 
   ArrowUpDown, 
@@ -7,13 +8,9 @@ import {
   ArrowDown, 
   ChevronRight, 
   Clock, 
-  User, 
-  CreditCard, 
   Filter, 
   RefreshCw,
   ShoppingBag,
-  ExternalLink,
-  DollarSign,
   TrendingUp,
   Receipt
 } from 'lucide-react';
@@ -90,10 +87,9 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
       const term = searchTerm.toLowerCase().trim();
       result = result.filter(order => {
         const uuidMatch = order.id.toLowerCase().includes(term);
-        const nameMatch = (order.customer_name || '').toLowerCase().includes(term);
-        const emailMatch = (order.customer_email || '').toLowerCase().includes(term);
-        const usernameMatch = (order.customer_username || '').toLowerCase().includes(term);
-        return uuidMatch || nameMatch || emailMatch || usernameMatch;
+        const nameMatch = (order.client?.username || '').toLowerCase().includes(term);
+        const emailMatch = (order.client?.email || '').toLowerCase().includes(term);
+        return uuidMatch || nameMatch || emailMatch;
       });
     }
 
@@ -108,10 +104,6 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
       let valB: any = '';
 
       switch (sortField) {
-        case 'id':
-          valA = a.id;
-          valB = b.id;
-          break;
         case 'inserted_at':
           valA = new Date(a.inserted_at).getTime() || 0;
           valB = new Date(b.inserted_at).getTime() || 0;
@@ -121,8 +113,8 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
           valB = new Date(b.updated_at).getTime() || 0;
           break;
         case 'customer_name':
-          valA = (a.customer_name || 'Anônimo').toLowerCase();
-          valB = (b.customer_name || 'Anônimo').toLowerCase();
+          valA = (a.client?.username || 'Anônimo').toLowerCase();
+          valB = (b.client?.username || 'Anônimo').toLowerCase();
           break;
         case 'total':
           valA = parseFloat(a.total) || 0;
@@ -150,24 +142,6 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
     if (pageSize === -1) return filteredAndSortedOrders;
     return filteredAndSortedOrders.slice(0, pageSize);
   }, [filteredAndSortedOrders, pageSize]);
-
-  // Format date helper
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      const date = new Date(dateStr);
-      return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }).format(date);
-    } catch {
-      return dateStr;
-    }
-  };
 
   // Status Badge styling helper
   const getStatusBadge = (status?: string) => {
@@ -356,7 +330,6 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
               {sortField === 'inserted_at' && 'Data de Criação'}
               {sortField === 'updated_at' && 'Data de Atualização'}
               {sortField === 'customer_name' && 'Nome do Cliente'}
-              {sortField === 'id' && 'UUID'}
               {sortField === 'total' && 'Valor Total'}
               {sortField === 'status_order' && 'Status'}
               {' '}({sortDirection === 'desc' ? 'Decrescente' : 'Crescente'})
@@ -370,19 +343,7 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
             <thead>
               <tr className="bg-[#f9f9f7] text-[#5A5A40] text-[10px] font-bold uppercase tracking-wider border-b border-[#e5e5df]">
                 
-                {/* 1. Column: UUID */}
-                <th 
-                  onClick={() => handleSort('id')}
-                  className="py-3.5 px-5 cursor-pointer hover:underline transition-colors group select-none"
-                  title="Clique para ordenar por UUID"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span>UUID do Pedido</span>
-                    {renderSortIcon('id')}
-                  </div>
-                </th>
-
-                {/* 2. Column: Customer Name */}
+                {/* 1. Column: Customer Name */}
                 <th 
                   onClick={() => handleSort('customer_name')}
                   className="py-3.5 px-5 cursor-pointer hover:underline transition-colors group select-none"
@@ -394,7 +355,7 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
                   </div>
                 </th>
 
-                {/* 3. Column: Creation Date */}
+                {/* 2. Column: Creation Date */}
                 <th 
                   onClick={() => handleSort('inserted_at')}
                   className="py-3.5 px-5 cursor-pointer hover:underline transition-colors group select-none"
@@ -406,7 +367,7 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
                   </div>
                 </th>
 
-                {/* 4. Column: Update Date */}
+                {/* 3. Column: Update Date */}
                 <th 
                   onClick={() => handleSort('updated_at')}
                   className="py-3.5 px-5 cursor-pointer hover:underline transition-colors group select-none"
@@ -418,7 +379,7 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
                   </div>
                 </th>
 
-                {/* 5. Column: Total */}
+                {/* 4. Column: Total */}
                 <th 
                   onClick={() => handleSort('total')}
                   className="py-3.5 px-5 text-right cursor-pointer hover:underline transition-colors group select-none"
@@ -430,7 +391,7 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
                   </div>
                 </th>
 
-                {/* 6. Column: Status */}
+                {/* 5. Column: Status */}
                 <th 
                   onClick={() => handleSort('status_order')}
                   className="py-3.5 px-5 text-center cursor-pointer hover:underline transition-colors group select-none"
@@ -447,9 +408,28 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
             </thead>
 
             <tbody className="divide-y divide-[#f0f0eb] text-sm">
-              {displayedOrders.length === 0 ? (
+              {isLoading && displayedOrders.length === 0 ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="py-3.5 px-5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-[#f0f0eb]" />
+                        <div className="space-y-1.5">
+                          <div className="h-2.5 w-32 rounded bg-[#f0f0eb]" />
+                          <div className="h-2 w-24 rounded bg-[#f5f5f0]" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-5"><div className="h-2.5 w-36 rounded bg-[#f0f0eb]" /></td>
+                    <td className="py-3.5 px-5"><div className="h-2.5 w-36 rounded bg-[#f0f0eb]" /></td>
+                    <td className="py-3.5 px-5 text-right"><div className="h-3 w-16 ml-auto rounded bg-[#f0f0eb]" /></td>
+                    <td className="py-3.5 px-5 text-center"><div className="h-5 w-20 mx-auto rounded-full bg-[#f0f0eb]" /></td>
+                    <td className="py-3.5 px-3" />
+                  </tr>
+                ))
+              ) : displayedOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-[#8a8a78]">
+                  <td colSpan={6} className="py-12 text-center text-[#8a8a78]">
                     <div className="max-w-xs mx-auto space-y-3">
                       <div className="w-12 h-12 rounded-full bg-[#f5f5f0] flex items-center justify-center mx-auto text-[#8a8a78]">
                         <ShoppingBag className="w-6 h-6" />
@@ -467,35 +447,35 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
                   return (
                     <tr
                       key={order.id}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Ver detalhes do pedido de ${order.client?.username || 'cliente'}`}
                       onClick={() => onSelectOrder(order)}
-                      className={`cursor-pointer transition-colors duration-150 group ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onSelectOrder(order);
+                        }
+                      }}
+                      className={`cursor-pointer transition-colors duration-150 group focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#5A5A40] ${
                         isSelected 
                           ? 'bg-[#f5f5f0] border-l-4 border-l-[#5A5A40]' 
                           : 'hover:bg-[#fdfdfb]'
                       }`}
                     >
-                      {/* UUID */}
-                      <td className="py-3.5 px-5 font-mono text-[11px] text-[#8a8a78] font-semibold group-hover:text-[#5A5A40] transition-colors">
-                        <div className="flex items-center gap-2">
-                          <span className="truncate max-w-[130px] sm:max-w-[180px]" title={order.id}>
-                            {order.id}
-                          </span>
-                        </div>
-                      </td>
-
                       {/* Customer Name */}
                       <td className="py-3.5 px-5 text-[#3d3d33] font-medium">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-full bg-[#d8d8ce] text-[#5A5A40] flex items-center justify-center font-bold text-xs uppercase">
-                            {(order.customer_name || 'A').charAt(0)}
+                            {(order.client?.username || 'A').charAt(0)}
                           </div>
                           <div>
                             <p className="text-xs font-bold text-[#3d3d33] leading-tight">
-                              {order.customer_name || 'Cliente Sem Nome'}
+                              {order.client?.username || 'Cliente Sem Nome'}
                             </p>
-                            {order.customer_email && (
+                            {order.client?.email && (
                               <p className="text-[10px] text-[#8a8a78] leading-tight">
-                                {order.customer_email}
+                                {order.client.email}
                               </p>
                             )}
                           </div>
@@ -522,7 +502,7 @@ export const OrdersDashboard: React.FC<OrdersDashboardProps> = ({
                       <td className="py-3.5 px-5 text-right font-serif font-bold text-[#5A5A40] text-base">
                         R$ {parseFloat(order.total || '0').toFixed(2)}
                         <span className="block text-[10px] text-[#8a8a78] font-sans font-normal">
-                          {order.payment_method || 'PIX'}
+                          {paymentMethodLabel(order.payment_method)}
                         </span>
                       </td>
 

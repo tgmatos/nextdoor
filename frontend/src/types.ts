@@ -57,6 +57,12 @@ export interface Account {
   addresses?: Address[];
 }
 
+export interface OrderClient {
+  id: string;
+  username: string;
+  email: string;
+}
+
 export interface Order {
   id: string;
   total: string;
@@ -65,14 +71,12 @@ export interface Order {
   payment_method: PaymentMethodType;
   status_order: OrderStatusType; // Also serialized as status in some endpoints
   status?: OrderStatusType;
-  customer_name?: string;
-  customer_email?: string;
-  customer_username?: string;
+  client?: OrderClient;
   address?: Address;
   order_product?: OrderItem[];
 }
 
-export type SortField = 'id' | 'inserted_at' | 'updated_at' | 'customer_name' | 'total' | 'status_order';
+export type SortField = 'inserted_at' | 'updated_at' | 'customer_name' | 'total' | 'status_order';
 export type SortDirection = 'asc' | 'desc';
 
 export type ActiveTab = 'orders' | 'inventory' | 'store_profile';

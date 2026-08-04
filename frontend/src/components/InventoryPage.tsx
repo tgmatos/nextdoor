@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Product } from '../types';
+import { formatDate } from '../utils';
 import { 
   Package, 
   Search, 
@@ -8,9 +9,7 @@ import {
   CheckCircle2, 
   XCircle, 
   RefreshCw,
-  ChevronRight,
-  Filter,
-  DollarSign
+  ChevronRight
 } from 'lucide-react';
 
 interface InventoryPageProps {
@@ -59,22 +58,6 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
   const totalStockItems = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
   const lowStockCount = products.filter(p => p.quantity > 0 && p.quantity <= 5).length;
   const outOfStockCount = products.filter(p => p.quantity === 0).length;
-
-  // Format date helper
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }).format(new Date(dateStr));
-    } catch {
-      return dateStr;
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -265,8 +248,17 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                     // Requirement 2: When clicking a product, opens right side panel with all details
                     <tr
                       key={product.id}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Ver detalhes do produto ${product.name}`}
                       onClick={() => onSelectProduct(product)}
-                      className={`cursor-pointer transition-colors duration-150 group ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onSelectProduct(product);
+                        }
+                      }}
+                      className={`cursor-pointer transition-colors duration-150 group focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#5A5A40] ${
                         isSelected 
                           ? 'bg-[#f5f5f0] border-l-4 border-l-[#5A5A40]' 
                           : 'hover:bg-[#fdfdfb]'

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Store, CategoryType } from '../types';
+import { CategoryType } from '../types';
 import { registerAccount, createStore } from '../api/client';
 import { 
   User, 

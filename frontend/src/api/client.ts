@@ -1,10 +1,17 @@
 import { Order, Product, Store, Account, Address, OrderStatusType } from '../types';
 
 let authToken = localStorage.getItem('nextdoor_auth_token') || '';
+let unauthorizedHandler: (() => void) | null = null;
 
-export function setAuthToken(token: string) {
+export function onUnauthorized(handler: () => void) {
+  unauthorizedHandler = handler;
+}
+
+export function setAuthToken(token: string, persist = true) {
   authToken = token;
-  localStorage.setItem('nextdoor_auth_token', token);
+  if (persist) {
+    localStorage.setItem('nextdoor_auth_token', token);
+  }
 }
 
 export function clearAuthToken() {
@@ -36,11 +43,21 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     return {} as T;
   }
 
+  if (response.status === 401) {
+    const hadToken = Boolean(authToken);
+    clearAuthToken();
+    if (hadToken) {
+      unauthorizedHandler?.();
+    }
+  }
+
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     const errorMsg = data?.errors?.detail || data?.error || (data?.errors ? JSON.stringify(data.errors) : 'Erro na requisição');
-    throw new Error(errorMsg);
+    const error = new Error(errorMsg) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
   }
 
   return data as T;
@@ -77,6 +94,7 @@ export async function registerAccount(data: {
 export async function loginAccount(data: {
   email: string;
   password?: string;
+  remember?: boolean;
 }): Promise<{ token: string }> {
   const payload = {
     email: data.email,
@@ -88,7 +106,7 @@ export async function loginAccount(data: {
     body: JSON.stringify(payload)
   });
   if (res.token) {
-    setAuthToken(res.token);
+    setAuthToken(res.token, data.remember !== false);
   }
   return res;
 }
@@ -159,20 +177,6 @@ export async function updateOrderStatus(
     ...res,
     status_order: st
   };
-}
-
-export async function createOrder(
-  storeId: string,
-  products: { product: string; quantity: number }[],
-  paymentMethod: string
-): Promise<Order> {
-  return apiRequest<Order>(`/api/store/order/${storeId}`, {
-    method: 'POST',
-    body: JSON.stringify({
-      products,
-      payment_method: paymentMethod
-    })
-  });
 }
 
 // 2. Inventory / Products

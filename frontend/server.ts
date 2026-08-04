@@ -454,13 +454,41 @@ app.get("/api/store/order", (req, res) => {
     return res.json({ orders: [] });
   }
   const storeOrders = ensureStoreOrders(ownerStore.id, account?.id || "default-acc");
-  res.json({ orders: storeOrders });
+  res.json({
+    orders: storeOrders.map(o => ({
+      id: o.id,
+      status: o.status_order,
+      total: o.total,
+      payment_method: o.payment_method,
+      inserted_at: o.inserted_at,
+      updated_at: o.updated_at,
+      client: {
+        id: o.account_id,
+        username: o.customer_username,
+        email: o.customer_email
+      }
+    }))
+  });
 });
 
 app.get("/api/store/order/:id", (req, res) => {
   const order = sampleOrders.find(o => o.id === req.params.id);
   if (!order) return res.status(404).json({ errors: { detail: "Not Found" } });
-  res.json(order);
+  res.json({
+    id: order.id,
+    total: order.total,
+    inserted_at: order.inserted_at,
+    updated_at: order.updated_at,
+    payment_method: order.payment_method,
+    status_order: order.status_order,
+    client: {
+      id: order.account_id,
+      username: order.customer_username,
+      email: order.customer_email
+    },
+    address: order.address || undefined,
+    order_product: order.order_product
+  });
 });
 
 // Place new order

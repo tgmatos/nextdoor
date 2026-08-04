@@ -19,11 +19,24 @@ defmodule NextDoorWeb.OrderControllerTest do
   end
 
   describe "list orders by store" do
-    test "lists the store owner's orders", %{conn: conn, order: order} do
+    test "lists the store owner's orders with client info and dates", %{
+      conn: conn,
+      order: order,
+      customer: customer
+    } do
+      customer_id = customer.id
+      customer_username = customer.username
+      customer_email = customer.email
+
       conn = get(conn, ~p"/api/store/order")
 
       assert %{"orders" => orders} = json_response(conn, 200)
-      assert Enum.any?(orders, &(&1["id"] == order.id))
+      assert [listed] = Enum.filter(orders, &(&1["id"] == order.id))
+      assert listed["client"]["id"] == customer_id
+      assert listed["client"]["username"] == customer_username
+      assert listed["client"]["email"] == customer_email
+      assert listed["inserted_at"] != nil
+      assert listed["updated_at"] != nil
     end
 
     test "returns an empty list when the owner has no orders", %{conn: conn} do
