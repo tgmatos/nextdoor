@@ -1,0 +1,6 @@
+{
+  "name": "Store Control Panel",
+  "description": "Control panel for stores with order tracking, inventory management, and store profile editing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
