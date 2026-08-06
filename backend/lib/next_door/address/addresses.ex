@@ -1,14 +1,14 @@
 defmodule NextDoor.Addresses do
-  alias NextDoor.{Address, Account, Repo}
+  alias NextDoor.{Address, Repo}
   alias NextDoor.Validators
+  alias Ecto.Multi
   import Ecto.Query
 
   def new_address(params) do
-    acc = Repo.get(Account, params.account_id)
-
-    %Address{}
-    |> Address.changeset(Map.put(params, :account, acc))
-    |> Repo.insert()
+    Multi.new()
+    |> Multi.insert(:address, %Address{} |> Address.changeset(params))
+    |> Multi.run(:link, fn repo, %{address: address} -> link_address(repo, address, params) end)
+    |> transact(:address)
   end
 
   def get_address(%{account_id: account_id, address_id: address_id}) do
@@ -54,10 +54,29 @@ defmodule NextDoor.Addresses do
            |> Repo.one() do
       record
       |> Address.update_changeset(address)
-      |> Repo.update()
+      |> then(&Multi.update(Multi.new(), :address, &1))
+      |> transact(:address)
     else
       nil -> {:error, :record_not_found}
       {:error, :invalid_uuid} -> {:error, :invalid_uuid}
+    end
+  end
+
+  defp link_address(repo, address, params) do
+    address_id_binary = Ecto.UUID.dump!(address.id)
+    account_id_binary = Ecto.UUID.dump!(params.account_id)
+
+    repo.insert_all("account_address", [
+      %{account_id: account_id_binary, address_id: address_id_binary}
+    ])
+
+    {:ok, address}
+  end
+
+  defp transact(multi, step) do
+    case Repo.transaction(multi) do
+      {:ok, changes} -> {:ok, Map.fetch!(changes, step)}
+      {:error, _step, reason, _changes} -> {:error, reason}
     end
   end
 end

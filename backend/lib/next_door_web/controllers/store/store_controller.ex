@@ -20,6 +20,7 @@ defmodule NextDoorWeb.StoreController do
              owner_id: owner_id
            }) do
       Cache.clear_view_cache("view_cache:/api/stores")
+      Cache.clear_view_cache("view_cache:owner:#{owner_id}.")
       render(conn, :create, %{store: store})
     end
   end

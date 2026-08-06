@@ -178,7 +178,7 @@ defmodule NextDoorWeb.StoreControllerTest do
   end
 
   describe "delete" do
-    test "deletes the owner's store", %{conn: conn} do
+    test "soft-deletes the owner's store", %{conn: conn} do
       account = account_fixture()
       store = store_fixture(account)
       conn = auth_conn(conn, account)
@@ -186,7 +186,7 @@ defmodule NextDoorWeb.StoreControllerTest do
       conn = delete(conn, ~p"/api/store")
 
       assert response(conn, 204) == ""
-      assert Repo.get(Store, store.id) == nil
+      assert Repo.get(Store, store.id).active == false
     end
 
     test "returns 404 when the owner has no store", %{conn: conn} do

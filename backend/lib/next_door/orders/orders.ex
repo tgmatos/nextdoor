@@ -1,6 +1,7 @@
 defmodule NextDoor.Orders do
-  alias NextDoor.{Account, Order, OrderProduct, Inventory, Product, Store, Repo}
+  alias NextDoor.{Account, Order, OrderProduct, Inventory, Product, Store, Repo, Cache}
   alias NextDoor.Validators
+  alias Ecto.Multi
   import Ecto.Query
 
   @valid_transitions %{
@@ -91,9 +92,37 @@ defmodule NextDoor.Orders do
       with %Order{} = order <- Repo.one(query),
            true <- order.status_order == status_before,
            true <- valid_transition?(status_before, status_after) do
-        order
-        |> Order.update_changeset(%{status_order: status_after})
-        |> Repo.update()
+        with {:ok, updated} <-
+               Multi.new()
+               |> Multi.update(
+                 :order,
+                 Order.update_changeset(order, %{status_order: status_after})
+               )
+               |> transact(:order) do
+          Cache.clear_view_cache("view_cache:owner:#{owner_id}.")
+          Cache.clear_view_cache("view_cache:customer:#{updated.account_id}.")
+
+          payload = %{
+            id: updated.id,
+            total: updated.total,
+            status_order: updated.status_order,
+            payment_method: updated.payment_method
+          }
+
+          Phoenix.PubSub.broadcast(
+            NextDoor.PubSub,
+            "store:order:#{owner_id}",
+            {:order_updated, payload}
+          )
+
+          Phoenix.PubSub.broadcast(
+            NextDoor.PubSub,
+            "account:order:#{updated.account_id}",
+            {:order_updated, updated}
+          )
+
+          {:ok, updated}
+        end
       else
         false -> {:error, :invalid_transition}
         nil -> {:error, :not_found}
@@ -117,22 +146,31 @@ defmodule NextDoor.Orders do
          {:ok, address_id} <- get_customer_address(customer_id) do
       total = compute_total(products, items)
 
-      Repo.transaction(fn ->
-        with {:ok, order} <- insert_order(store, customer_id, address_id, total, payment_method),
-             {:ok, order} <- insert_order_products(order, items),
-             :ok <- decrement_inventory(items) do
-          order
-          |> Repo.preload(order_product: [:product])
-        else
-          {:error, reason} -> Repo.rollback(reason)
-        end
-      end)
+      with {:ok, order} <-
+             store
+             |> build_order_multi(customer_id, address_id, total, payment_method, items)
+             |> transact(:preload) do
+        Cache.clear_view_cache("view_cache:customer:#{customer_id}.")
+        Cache.clear_view_cache("view_cache:owner:#{store.owner_id}.")
+        Cache.clear_view_cache("view_cache:/api/stores")
+
+        order = Repo.preload(order, account: [], address: [])
+
+        Phoenix.PubSub.broadcast(
+          NextDoor.PubSub,
+          "store:order:#{store.owner_id}",
+          {:new_order, order}
+        )
+
+        {:ok, order}
+      end
     end
   end
 
   defp get_store(store_id) do
     case Repo.get(Store, store_id) do
       nil -> {:error, :store_not_found}
+      %{active: false} -> {:error, :store_not_found}
       store -> {:ok, store}
     end
   end
@@ -185,7 +223,7 @@ defmodule NextDoor.Orders do
     ids = Enum.map(items, & &1.product_id)
 
     products =
-      from(p in Product, where: p.store_id == ^store_id and p.id in ^ids)
+      from(p in Product, where: p.store_id == ^store_id and p.id in ^ids and p.active)
       |> Repo.all()
 
     if length(products) == length(Enum.uniq(ids)) do
@@ -209,28 +247,33 @@ defmodule NextDoor.Orders do
     end)
   end
 
-  defp insert_order(store, customer_id, address_id, total, payment_method) do
-    %Order{
+  defp build_order_multi(store, customer_id, address_id, total, payment_method, items) do
+    Multi.new()
+    |> Multi.insert(:order, %Order{
       total: total,
       status_order: "ESPERANDO",
       payment_method: payment_method,
       account_id: customer_id,
       store_id: store.id,
       address_id: address_id
-    }
-    |> Repo.insert()
-  end
-
-  defp insert_order_products(order, items) do
-    Enum.reduce_while(items, {:ok, order}, fn item, {:ok, _order} ->
-      case Repo.insert(%OrderProduct{
-             order_id: order.id,
-             product_id: item.product_id,
-             quantity: item.quantity
-           }) do
-        {:ok, _order_product} -> {:cont, {:ok, order}}
-        {:error, changeset} -> {:halt, {:error, changeset}}
+    })
+    |> Multi.merge(fn %{order: order} ->
+      Enum.reduce(items, Multi.new(), fn item, multi ->
+        Multi.insert(multi, {:order_product, item.product_id}, %OrderProduct{
+          order_id: order.id,
+          product_id: item.product_id,
+          quantity: item.quantity
+        })
+      end)
+    end)
+    |> Multi.run(:inventory, fn _repo, _changes ->
+      case decrement_inventory(items) do
+        :ok -> {:ok, :ok}
+        {:error, reason} -> {:error, reason}
       end
+    end)
+    |> Multi.run(:preload, fn repo, %{order: order} ->
+      {:ok, repo.preload(order, order_product: [:product])}
     end)
   end
 
@@ -257,5 +300,12 @@ defmodule NextDoor.Orders do
 
   defp valid_transition?(status_before, status_after) do
     status_after in Map.get(@valid_transitions, status_before, [])
+  end
+
+  defp transact(multi, step) do
+    case Repo.transaction(multi) do
+      {:ok, changes} -> {:ok, Map.fetch!(changes, step)}
+      {:error, _step, reason, _changes} -> {:error, reason}
+    end
   end
 end

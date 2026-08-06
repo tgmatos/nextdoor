@@ -1,7 +1,6 @@
 defmodule NextDoorWeb.OrderController do
   use NextDoorWeb, :controller
   alias NextDoor.Orders
-  alias NextDoor.Cache
   @cache :nd_cache
 
   action_fallback(NextDoorWeb.FallbackController)
@@ -97,8 +96,6 @@ defmodule NextDoorWeb.OrderController do
            after: status_after
          }) do
       {:ok, order} ->
-        Cache.clear_view_cache("view_cache:owner:#{owner_id}.")
-
         json(conn, %{
           id: order.id,
           total: order.total,

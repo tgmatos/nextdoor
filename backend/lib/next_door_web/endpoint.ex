@@ -13,6 +13,12 @@ defmodule NextDoorWeb.Endpoint do
 
   socket("/live", Phoenix.LiveView.Socket)
 
+  # WebSocket endpoint for order push notifications ("/socket?token=...")
+  socket("/socket", NextDoorWeb.UserSocket,
+    websocket: [check_origin: ["http://localhost:3000", "http://127.0.0.1:3000"]],
+    longpoll: false
+  )
+
   plug(Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
     cookie_key: "request_logger"

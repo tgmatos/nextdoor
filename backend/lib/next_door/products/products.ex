@@ -1,18 +1,20 @@
 defmodule NextDoor.Products do
   alias NextDoor.{Store, Repo, Cache, Product}
   alias NextDoor.Validators
+  alias Ecto.Multi
   import Ecto.Query
 
   def create(owner_id, attr \\ %{}) do
     case Cache.get_by(NextDoor.Store, %{owner_id: owner_id}) do
+      {:ok, %{active: false}} ->
+        {:error, :record_not_found}
+
       {:ok, store} ->
-        %Product{}
-        |> Product.new_product_changeset(Map.put(attr, :store_id, store.id))
-        |> Repo.insert()
-        |> case do
-          {:ok, product} -> {:ok, product}
-          {:error, changeset} -> {:error, changeset}
-        end
+        store_with_id = Map.put(attr, :store_id, store.id)
+
+        Multi.new()
+        |> Multi.insert(:product, Product.new_product_changeset(%Product{}, store_with_id))
+        |> transact(:product)
 
       {:error, :record_not_found} ->
         {:error, :record_not_found}
@@ -25,7 +27,7 @@ defmodule NextDoor.Products do
         from(p in Product,
           join: s in Store,
           on: s.id == p.store_id,
-          where: s.id == ^store_id,
+          where: s.id == ^store_id and p.active and s.active,
           select: p
         )
         |> Repo.all()
@@ -42,7 +44,7 @@ defmodule NextDoor.Products do
       from(p in Product,
         join: s in Store,
         on: p.store_id == s.id,
-        where: s.owner_id == ^owner_id,
+        where: s.owner_id == ^owner_id and p.active and s.active,
         select: p
       )
       |> Repo.all()
@@ -57,14 +59,14 @@ defmodule NextDoor.Products do
            from(p in Product,
              join: s in Store,
              on: p.store_id == s.id,
-             where: s.owner_id == ^owner_id and p.id == ^product_id,
+             where: s.owner_id == ^owner_id and p.id == ^product_id and p.active,
              select: p
            )
            |> Repo.one() do
       product_record
       |> Repo.preload(:inventory)
-      |> Product.update_product_changeset(product)
-      |> Repo.update()
+      |> then(&Multi.update(Multi.new(), :product, Product.update_product_changeset(&1, product)))
+      |> transact(:product)
     else
       nil -> {:error, :record_not_found}
       {:error, :invalid_uuid} -> {:error, :invalid_uuid}
@@ -81,10 +83,19 @@ defmodule NextDoor.Products do
              select: p
            )
            |> Repo.one() do
-      Repo.delete(product)
+      Multi.new()
+      |> Multi.update(:product, Product.deactivate_changeset(product, %{active: false}))
+      |> transact(:product)
     else
       nil -> {:error, :record_not_found}
       {:error, :invalid_uuid} -> {:error, :invalid_uuid}
+    end
+  end
+
+  defp transact(multi, step) do
+    case Repo.transaction(multi) do
+      {:ok, changes} -> {:ok, Map.fetch!(changes, step)}
+      {:error, _step, reason, _changes} -> {:error, reason}
     end
   end
 end

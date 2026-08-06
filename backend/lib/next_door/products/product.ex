@@ -6,12 +6,13 @@ defmodule NextDoor.Product do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
-  @derive {Jason.Encoder, except: [:store, :store_id, :__meta__]}
+  @derive {Jason.Encoder, except: [:store, :store_id, :active, :__meta__]}
   schema "product" do
     field(:name, :string)
     field(:price, :decimal)
     field(:description, :string)
     field(:image, :binary)
+    field(:active, :boolean, default: true)
     belongs_to(:store, Store, foreign_key: :store_id)
 
     has_one(:inventory, Inventory,
@@ -39,5 +40,10 @@ defmodule NextDoor.Product do
     |> cast_assoc(:inventory)
     |> foreign_key_constraint(:store_id)
     |> foreign_key_constraint(:product_id)
+  end
+
+  def deactivate_changeset(product, params \\ %{}) do
+    product
+    |> cast(params, [:active])
   end
 end

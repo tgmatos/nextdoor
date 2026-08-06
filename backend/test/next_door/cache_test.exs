@@ -62,6 +62,14 @@ defmodule NextDoor.CacheTest do
     assert {:ok, %Store{}} = Cachex.get(:nd_cache, {Store, %{owner_id: "x"}})
   end
 
+  test "delete removes a cached entry" do
+    account = account_fixture()
+    assert Cache.get_by(Account, email: account.email) == {:ok, account}
+
+    assert Cache.delete({Account, [email: account.email]}) == :ok
+    assert Cachex.get(:nd_cache, {Account, [email: account.email]}) == {:ok, nil}
+  end
+
   test "get_by falls back to the repo on a cache miss" do
     account = account_fixture()
     assert Cache.get_by(Account, email: account.email) == {:ok, account}

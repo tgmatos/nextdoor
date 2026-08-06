@@ -78,6 +78,11 @@ defmodule NextDoor.Cache do
     Cachex.clear(@cache)
   end
 
+  def delete(key) do
+    Cachex.del(@cache, key)
+    :ok
+  end
+
   def clear_view_cache(prefix) when is_binary(prefix) do
     {:ok, keys} = Cachex.keys(@cache)
 

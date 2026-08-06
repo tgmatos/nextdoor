@@ -31,6 +31,7 @@ import {
   clearAuthToken,
   onUnauthorized
 } from './api/client';
+import { connectStoreOrdersChannel } from './api/socket';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('orders');
@@ -125,14 +126,34 @@ export default function App() {
     }
   }, [isAuthenticated, loadOrders, loadProducts, loadProfile]);
 
-  // Auto-refresh orders every 15s while on the orders tab
+  // Realtime orders via websocket (replaces the 15s auto-refresh polling)
   useEffect(() => {
-    if (!isAuthenticated || activeTab !== 'orders') return;
-    const interval = setInterval(() => {
-      loadOrders();
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated, activeTab, loadOrders]);
+    if (!isAuthenticated) return;
+
+    const disconnect = connectStoreOrdersChannel({
+      onNewOrder: (order) => {
+        setOrders(prev => [order, ...prev.filter(o => o.id !== order.id)]);
+        showToast('Novo pedido recebido!');
+      },
+      onOrderUpdated: (order) => {
+        const status = order.status_order;
+        setOrders(prev =>
+          prev.map(o =>
+            o.id === order.id
+              ? { ...o, status_order: status, status, updated_at: order.updated_at }
+              : o
+          )
+        );
+        setSelectedOrder(prev =>
+          prev && prev.id === order.id
+            ? { ...prev, status_order: status, status, updated_at: order.updated_at }
+            : prev
+        );
+      }
+    });
+
+    return disconnect;
+  }, [isAuthenticated]);
 
   // Force logout when the session expires (401)
   useEffect(() => {

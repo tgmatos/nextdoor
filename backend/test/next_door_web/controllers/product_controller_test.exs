@@ -172,7 +172,7 @@ defmodule NextDoorWeb.ProductControllerTest do
   end
 
   describe "delete" do
-    test "deletes the owner's product", %{conn: conn} do
+    test "soft-deletes the owner's product", %{conn: conn} do
       account = account_fixture()
       store = store_fixture(account)
       product = product_fixture(store)
@@ -181,7 +181,7 @@ defmodule NextDoorWeb.ProductControllerTest do
       conn = delete(conn, ~p"/api/store/product/#{product.id}")
 
       assert response(conn, 204) == ""
-      assert Repo.get(Product, product.id) == nil
+      assert Repo.get(Product, product.id).active == false
     end
 
     test "returns 404 when deleting another owner's product", %{conn: conn} do

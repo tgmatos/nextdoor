@@ -13,6 +13,7 @@ defmodule NextDoor.Store do
     field(:telephone, :string)
     field(:category, :string)
     field(:image, :binary)
+    field(:active, :boolean, default: true)
     timestamps()
     belongs_to(:owner, Account, foreign_key: :owner_id)
     has_many(:orders, Order)
@@ -30,5 +31,10 @@ defmodule NextDoor.Store do
     |> cast(params, [:name, :description, :telephone, :image, :category])
     |> validate_required([:owner_id])
     |> foreign_key_constraint(:owner_id)
+  end
+
+  def deactivate_changeset(store, params \\ %{}) do
+    store
+    |> cast(params, [:active])
   end
 end
