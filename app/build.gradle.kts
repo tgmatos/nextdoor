@@ -1,46 +1,90 @@
-/*
- * Copyright 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 plugins {
-    alias(libs.plugins.gradle.versions)
-    alias(libs.plugins.version.catalog.update)
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.parcelize) apply false
-    alias(libs.plugins.compose) apply false
-    alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
 }
 
-apply("${project.rootDir}/buildscripts/toml-updater-config.gradle")
+android {
+    namespace = "com.nextdoor.app"
+    compileSdk = 35
 
-subprojects {
-    apply(plugin = "com.diffplug.spotless")
-    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
-        kotlin {
-            target("**/*.kt")
-            targetExclude("${layout.buildDirectory}/**/*.kt")
-            ktlint()
-            licenseHeaderFile(rootProject.file("spotless/copyright.kt"))
-        }
-        kotlinGradle {
-            target("*.gradle.kts")
-            targetExclude("${layout.buildDirectory}/**/*.kt")
-            ktlint()
-            // Look for the first line that doesn't have a block comment (assumed to be the license)
-            licenseHeaderFile(rootProject.file("spotless/copyright.kt"), "(^(?![\\/ ]\\*).*$)")
+    defaultConfig {
+        applicationId = "com.nextdoor.app"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0"
+
+        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:4000\"")
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+        // Opt into Compose experimental APIs used across the UI (Material3, Foundation,
+        // Layout, Compose UI). Kept module-wide to avoid scattering @OptIn across screens.
+        freeCompilerArgs += listOf(
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
+            "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi"
+        )
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+dependencies {
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons)
+    implementation(libs.androidx.navigation.compose)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.json)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.datastore.preferences)
+
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }

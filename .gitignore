@@ -33,3 +33,12 @@ backend/.elixir-tools/_build/
 backend/deps
 *~
 .#*
+
+# Android / Gradle
+.gradle/
+.idea/
+.kotlin/
+**/build/
+local.properties
+*.iml
+.fleet/
