@@ -1,4 +1,4 @@
-defmodule NextDoorWeb.OrderJson do
+defmodule NextDoorWeb.OrderJSON do
   def create(%{order: order}) do
     order_product =
       case order.order_product do

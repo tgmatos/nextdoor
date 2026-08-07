@@ -126,7 +126,7 @@ Add focused serializer tests for:
 - `AccountJSON` registration and login responses.
 - `StoreJSON` create, list, show, and update responses.
 - `ProductJSON` product and inventory formatting.
-- `OrderJson` order and product formatting.
+- `OrderJSON` order and product formatting.
 - Decimal conversion and image encoding.
 - `ErrorJSON` responses for 401, 404, 500, and unknown status templates.
 

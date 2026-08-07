@@ -15,7 +15,7 @@ defmodule NextDoorWeb.OrderController do
              products: params["products"],
              payment_method: params["payment_method"]
            }) do
-      json(conn, NextDoorWeb.OrderJson.create(%{order: order}))
+      json(conn, NextDoorWeb.OrderJSON.create(%{order: order}))
     end
   end
 
@@ -39,7 +39,7 @@ defmodule NextDoorWeb.OrderController do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
 
     with {:ok, order} <- Orders.get_order_by_store(%{owner_id: owner_id, order_id: order_id}) do
-      result = NextDoorWeb.OrderJson.show(%{order: order})
+      result = NextDoorWeb.OrderJSON.show(%{order: order})
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
 
@@ -56,7 +56,7 @@ defmodule NextDoorWeb.OrderController do
 
     with {:ok, order} <-
            Orders.get_order_by_customer(%{order_id: order_id, customer_id: customer}) do
-      result = %{order: NextDoorWeb.OrderJson.show(%{order: order})}
+      result = %{order: NextDoorWeb.OrderJSON.show(%{order: order})}
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
 
@@ -72,7 +72,7 @@ defmodule NextDoorWeb.OrderController do
     %{"sub" => customer} = Guardian.Plug.current_claims(conn)
 
     with {:ok, orders} <- Orders.get_orders_by_customer(%{customer_id: customer}) do
-      result = %{orders: Enum.map(orders, &NextDoorWeb.OrderJson.show(%{order: &1}))}
+      result = %{orders: Enum.map(orders, &NextDoorWeb.OrderJSON.show(%{order: &1}))}
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
 

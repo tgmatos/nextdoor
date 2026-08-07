@@ -1,4 +1,4 @@
-defmodule NextDoorWeb.OrderJsonTest do
+defmodule NextDoorWeb.OrderJSONTest do
   use ExUnit.Case, async: true
 
   alias NextDoor.{Order, OrderProduct, Product}
@@ -28,7 +28,7 @@ defmodule NextDoorWeb.OrderJsonTest do
       order_product: [%OrderProduct{product: product(), quantity: 2}]
     }
 
-    result = NextDoorWeb.OrderJson.show(%{order: order})
+    result = NextDoorWeb.OrderJSON.show(%{order: order})
 
     assert result == %{
              id: "order-id",
@@ -63,7 +63,7 @@ defmodule NextDoorWeb.OrderJsonTest do
       order_product: []
     }
 
-    result = NextDoorWeb.OrderJson.show(%{order: order})
+    result = NextDoorWeb.OrderJSON.show(%{order: order})
     assert result.order_product == []
   end
 end

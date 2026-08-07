@@ -2,7 +2,7 @@ defmodule NextDoorWeb.StoreOrderChannel do
   use NextDoorWeb, :channel
 
   alias NextDoor.{Repo, Store}
-  alias NextDoorWeb.OrderJson
+  alias NextDoorWeb.OrderJSON
 
   def join("store:order:" <> owner_id, _payload, socket) do
     account_id = socket.assigns.account_id
@@ -17,7 +17,7 @@ defmodule NextDoorWeb.StoreOrderChannel do
   def join(_topic, _payload, _socket), do: {:error, %{reason: "unauthorized"}}
 
   def handle_info({:new_order, order}, socket) do
-    push(socket, "new_order", OrderJson.show(%{order: order}))
+    push(socket, "new_order", OrderJSON.show(%{order: order}))
     {:noreply, socket}
   end
 
