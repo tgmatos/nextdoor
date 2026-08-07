@@ -25,12 +25,28 @@ defmodule NextDoorWeb.StoreController do
     end
   end
 
-  def index(conn, _params) do
-    with {:ok, stores} <- Stores.index() do
-      result = NextDoorWeb.StoreJSON.index(%{stores: stores})
+  def index(conn, params) do
+    opts = %{page: params["page"], per_page: params["per_page"]}
+
+    with {:ok, paginated} <- Stores.index(opts) do
+      result = %{
+        entries: NextDoorWeb.StoreJSON.index(%{stores: paginated.entries}).stores,
+        page: paginated.page,
+        per_page: paginated.per_page,
+        total: paginated.total,
+        total_pages: paginated.total_pages
+      }
+
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
-      Cachex.put(@cache, "view_cache:#{conn.request_path}", cache_value, expire: 1000)
+
+      Cachex.put(
+        @cache,
+        "view_cache:#{conn.request_path}?page=#{paginated.page}&per_page=#{paginated.per_page}",
+        cache_value,
+        expire: 1000
+      )
+
       json(conn, result)
     end
   end

@@ -1,6 +1,7 @@
 defmodule NextDoor.Products do
   alias NextDoor.{Store, Repo, Cache, Product}
   alias NextDoor.Validators
+  alias NextDoor.Pagination
   alias Ecto.Multi
   import Ecto.Query
   import NextDoor.RepoHelper
@@ -22,35 +23,35 @@ defmodule NextDoor.Products do
     end
   end
 
-  def list_products(store_id) do
+  def list_products(store_id, opts \\ %{}) do
     with {:ok, _} <- Validators.parse_uuid(store_id) do
-      result =
+      query =
         from(p in Product,
           join: s in Store,
           on: s.id == p.store_id,
           where: s.id == ^store_id and p.active and s.active,
           select: p
         )
-        |> Repo.all()
-        |> Enum.map(&Repo.preload(&1, :inventory))
 
+      result = Pagination.paginate(query, Repo, opts)
+      result = %{result | entries: Enum.map(result.entries, &Repo.preload(&1, :inventory))}
       {:ok, result}
     else
       {:error, :invalid_uuid} -> {:error, :invalid_uuid}
     end
   end
 
-  def index(owner_id) do
-    result =
+  def index(owner_id, opts \\ %{}) do
+    query =
       from(p in Product,
         join: s in Store,
         on: p.store_id == s.id,
         where: s.owner_id == ^owner_id and p.active and s.active,
         select: p
       )
-      |> Repo.all()
-      |> Enum.map(&Repo.preload(&1, :inventory))
 
+    result = Pagination.paginate(query, Repo, opts)
+    result = %{result | entries: Enum.map(result.entries, &Repo.preload(&1, :inventory))}
     {:ok, result}
   end
 

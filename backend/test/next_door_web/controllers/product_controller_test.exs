@@ -84,8 +84,8 @@ defmodule NextDoorWeb.ProductControllerTest do
 
       conn = get(conn, ~p"/api/store/product")
 
-      assert %{"products" => products} = json_response(conn, 200)
-      assert Enum.any?(products, &(&1["id"] == product.id))
+      assert %{"entries" => entries} = json_response(conn, 200)
+      assert Enum.any?(entries, &(&1["id"] == product.id))
     end
 
     test "returns an empty list when the owner has no products", %{conn: conn} do
@@ -95,7 +95,7 @@ defmodule NextDoorWeb.ProductControllerTest do
 
       conn = get(conn, ~p"/api/store/product")
 
-      assert json_response(conn, 200)["products"] == []
+      assert json_response(conn, 200)["entries"] == []
     end
   end
 
@@ -107,8 +107,8 @@ defmodule NextDoorWeb.ProductControllerTest do
 
       conn = get(conn, ~p"/api/stores/#{store.id}/product")
 
-      assert %{"products" => products} = json_response(conn, 200)
-      assert Enum.any?(products, &(&1["id"] == product.id))
+      assert %{"entries" => entries} = json_response(conn, 200)
+      assert Enum.any?(entries, &(&1["id"] == product.id))
     end
 
     test "returns an empty list when the store has no products", %{conn: conn} do
@@ -117,7 +117,7 @@ defmodule NextDoorWeb.ProductControllerTest do
 
       conn = get(conn, ~p"/api/stores/#{store.id}/product")
 
-      assert json_response(conn, 200)["products"] == []
+      assert json_response(conn, 200)["entries"] == []
     end
 
     test "returns 400 for a malformed store id", %{conn: conn} do

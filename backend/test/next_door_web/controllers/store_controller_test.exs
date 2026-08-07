@@ -56,7 +56,7 @@ defmodule NextDoorWeb.StoreControllerTest do
   describe "index" do
     test "returns an empty list when there are no stores", %{conn: conn} do
       conn = get(conn, ~p"/api/stores")
-      assert json_response(conn, 200)["stores"] == []
+      assert json_response(conn, 200)["entries"] == []
     end
 
     test "lists all stores", %{conn: conn} do
@@ -65,9 +65,9 @@ defmodule NextDoorWeb.StoreControllerTest do
 
       conn = get(conn, ~p"/api/stores")
 
-      assert %{"stores" => stores} = json_response(conn, 200)
-      assert is_list(stores)
-      assert length(stores) == 1
+      assert %{"entries" => entries} = json_response(conn, 200)
+      assert is_list(entries)
+      assert length(entries) == 1
     end
   end
 

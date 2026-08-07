@@ -1,6 +1,7 @@
 defmodule NextDoor.Orders do
   alias NextDoor.{Account, Order, OrderProduct, Inventory, Product, Store, Repo, Cache}
   alias NextDoor.Validators
+  alias NextDoor.Pagination
   alias Ecto.Multi
   import Ecto.Query
   import NextDoor.RepoHelper
@@ -14,8 +15,8 @@ defmodule NextDoor.Orders do
     "CANCELADO" => []
   }
 
-  def get_orders_by_store(%{owner_id: owner_id}) do
-    result =
+  def get_orders_by_store(%{owner_id: owner_id} = opts) do
+    query =
       from(s in Store,
         join: o in Order,
         on: s.id == o.store_id,
@@ -31,9 +32,8 @@ defmodule NextDoor.Orders do
           client: %{id: a.id, username: a.username, email: a.email}
         }
       )
-      |> Repo.all()
 
-    {:ok, result}
+    {:ok, Pagination.paginate(query, Repo, opts)}
   end
 
   def get_order_by_store(%{owner_id: owner_id, order_id: order_id}) do
@@ -72,11 +72,10 @@ defmodule NextDoor.Orders do
     end
   end
 
-  def get_orders_by_customer(%{customer_id: customer_id}) do
-    result =
-      Repo.all_by(Order, account_id: customer_id)
-      |> Repo.preload([:address, :products, :account])
-
+  def get_orders_by_customer(%{customer_id: customer_id} = opts) do
+    query = from(o in Order, where: o.account_id == ^customer_id)
+    result = Pagination.paginate(query, Repo, opts)
+    result = %{result | entries: Repo.preload(result.entries, [:address, :products, :account])}
     {:ok, result}
   end
 

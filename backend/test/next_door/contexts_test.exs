@@ -184,7 +184,7 @@ defmodule NextDoor.ContextsTest do
       assert Stores.get_by_id(store.id) == {:error, :store_not_found}
       assert Stores.show(%{owner_id: owner.id}) == {:error, :store_not_found}
 
-      {:ok, stores} = Stores.index()
+      {:ok, %{entries: stores}} = Stores.index()
       refute Enum.any?(stores, &(&1.id == store.id))
     end
 
@@ -222,10 +222,10 @@ defmodule NextDoor.ContextsTest do
       assert {:ok, deleted} = Products.delete(product.id, owner.id)
       refute deleted.active
 
-      {:ok, products} = Products.list_products(store.id)
+      {:ok, %{entries: products}} = Products.list_products(store.id)
       refute Enum.any?(products, &(&1.id == product.id))
 
-      {:ok, products} = Products.index(owner.id)
+      {:ok, %{entries: products}} = Products.index(owner.id)
       refute Enum.any?(products, &(&1.id == product.id))
 
       assert Products.update(owner.id, product.id, %{name: "Edited"}) ==

@@ -1,6 +1,7 @@
 defmodule NextDoor.Stores do
   alias NextDoor.{Store, Repo, Cache}
   alias NextDoor.Validators
+  alias NextDoor.Pagination
   alias Ecto.Multi
   import Ecto.Query
   import NextDoor.RepoHelper
@@ -11,11 +12,8 @@ defmodule NextDoor.Stores do
     |> transact(:store)
   end
 
-  def index do
-    case Repo.all(from(s in Store, where: s.active)) do
-      nil -> {:ok, nil}
-      stores -> {:ok, stores}
-    end
+  def index(opts \\ %{}) do
+    {:ok, Pagination.paginate(from(s in Store, where: s.active), Repo, opts)}
   end
 
   def get_by_id(id) do

@@ -19,15 +19,26 @@ defmodule NextDoorWeb.OrderController do
     end
   end
 
-  def list_orders_by_store(conn, _params) do
+  def list_orders_by_store(conn, params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
+    opts = %{owner_id: owner_id, page: params["page"], per_page: params["per_page"]}
 
-    with {:ok, orders} <- Orders.get_orders_by_store(%{owner_id: owner_id}) do
-      result = %{orders: orders}
+    with {:ok, paginated} <- Orders.get_orders_by_store(opts) do
+      result = %{
+        entries: paginated.entries,
+        page: paginated.page,
+        per_page: paginated.per_page,
+        total: paginated.total,
+        total_pages: paginated.total_pages
+      }
+
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
 
-      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value,
+      Cachex.put(
+        @cache,
+        "view_cache:owner:#{owner_id}.#{conn.request_path}?page=#{paginated.page}&per_page=#{paginated.per_page}",
+        cache_value,
         expire: 1000
       )
 
@@ -68,15 +79,26 @@ defmodule NextDoorWeb.OrderController do
     end
   end
 
-  def get_orders_by_customer(conn, _params) do
+  def get_orders_by_customer(conn, params) do
     %{"sub" => customer} = Guardian.Plug.current_claims(conn)
+    opts = %{customer_id: customer, page: params["page"], per_page: params["per_page"]}
 
-    with {:ok, orders} <- Orders.get_orders_by_customer(%{customer_id: customer}) do
-      result = %{orders: Enum.map(orders, &NextDoorWeb.OrderJSON.show(%{order: &1}))}
+    with {:ok, paginated} <- Orders.get_orders_by_customer(opts) do
+      result = %{
+        entries: Enum.map(paginated.entries, &NextDoorWeb.OrderJSON.show(%{order: &1})),
+        page: paginated.page,
+        per_page: paginated.per_page,
+        total: paginated.total,
+        total_pages: paginated.total_pages
+      }
+
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
 
-      Cachex.put(@cache, "view_cache:customer:#{customer}.#{conn.request_path}", cache_value,
+      Cachex.put(
+        @cache,
+        "view_cache:customer:#{customer}.#{conn.request_path}?page=#{paginated.page}&per_page=#{paginated.per_page}",
+        cache_value,
         expire: 1000
       )
 

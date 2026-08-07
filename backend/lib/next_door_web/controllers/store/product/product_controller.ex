@@ -25,25 +25,52 @@ defmodule NextDoorWeb.ProductController do
     end
   end
 
-  def list(conn, %{"id" => store_id}) do
-    with {:ok, products} <- Products.list_products(store_id) do
-      result = NextDoorWeb.ProductJSON.show(%{products: products})
+  def list(conn, %{"id" => store_id} = params) do
+    opts = %{page: params["page"], per_page: params["per_page"]}
+
+    with {:ok, paginated} <- Products.list_products(store_id, opts) do
+      result = %{
+        entries: NextDoorWeb.ProductJSON.show(%{products: paginated.entries}).products,
+        page: paginated.page,
+        per_page: paginated.per_page,
+        total: paginated.total,
+        total_pages: paginated.total_pages
+      }
+
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
-      Cachex.put(@cache, "view_cache:#{conn.request_path}", cache_value, expire: 60)
+
+      Cachex.put(
+        @cache,
+        "view_cache:#{conn.request_path}?page=#{paginated.page}&per_page=#{paginated.per_page}",
+        cache_value,
+        expire: 60
+      )
+
       json(conn, result)
     end
   end
 
-  def index(conn, _params) do
+  def index(conn, params) do
     %{"sub" => owner_id} = Guardian.Plug.current_claims(conn)
+    opts = %{page: params["page"], per_page: params["per_page"]}
 
-    with {:ok, products} <- Products.index(owner_id) do
-      result = NextDoorWeb.ProductJSON.show(%{products: products})
+    with {:ok, paginated} <- Products.index(owner_id, opts) do
+      result = %{
+        entries: NextDoorWeb.ProductJSON.show(%{products: paginated.entries}).products,
+        page: paginated.page,
+        per_page: paginated.per_page,
+        total: paginated.total,
+        total_pages: paginated.total_pages
+      }
+
       json_response = Jason.encode!(result)
       cache_value = {200, json_response}
 
-      Cachex.put(@cache, "view_cache:owner:#{owner_id}.#{conn.request_path}", cache_value,
+      Cachex.put(
+        @cache,
+        "view_cache:owner:#{owner_id}.#{conn.request_path}?page=#{paginated.page}&per_page=#{paginated.per_page}",
+        cache_value,
         expire: 60
       )
 

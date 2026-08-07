@@ -30,8 +30,8 @@ defmodule NextDoorWeb.OrderControllerTest do
 
       conn = get(conn, ~p"/api/store/order")
 
-      assert %{"orders" => orders} = json_response(conn, 200)
-      assert [listed] = Enum.filter(orders, &(&1["id"] == order.id))
+      assert %{"entries" => entries} = json_response(conn, 200)
+      assert [listed] = Enum.filter(entries, &(&1["id"] == order.id))
       assert listed["client"]["id"] == customer_id
       assert listed["client"]["username"] == customer_username
       assert listed["client"]["email"] == customer_email
@@ -46,7 +46,7 @@ defmodule NextDoorWeb.OrderControllerTest do
 
       conn = get(conn, ~p"/api/store/order")
 
-      assert json_response(conn, 200)["orders"] == []
+      assert json_response(conn, 200)["entries"] == []
     end
   end
 
@@ -103,8 +103,8 @@ defmodule NextDoorWeb.OrderControllerTest do
       conn = auth_conn(conn, customer)
       conn = get(conn, ~p"/api/account/order")
 
-      assert %{"orders" => orders} = json_response(conn, 200)
-      assert Enum.any?(orders, &(&1["id"] == order.id))
+      assert %{"entries" => entries} = json_response(conn, 200)
+      assert Enum.any?(entries, &(&1["id"] == order.id))
     end
 
     test "returns the customer's order", %{
