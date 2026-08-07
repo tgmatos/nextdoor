@@ -64,13 +64,15 @@ defmodule NextDoor.Addresses do
   end
 
   defp link_address(repo, address, params) do
-    address_id_binary = Ecto.UUID.dump!(address.id)
-    account_id_binary = Ecto.UUID.dump!(params.account_id)
+    with {:ok, address_id_binary} <- Ecto.UUID.dump(address.id),
+         {:ok, account_id_binary} <- Ecto.UUID.dump(params.account_id) do
+      repo.insert_all("account_address", [
+        %{account_id: account_id_binary, address_id: address_id_binary}
+      ])
 
-    repo.insert_all("account_address", [
-      %{account_id: account_id_binary, address_id: address_id_binary}
-    ])
-
-    {:ok, address}
+      {:ok, address}
+    else
+      _ -> {:error, :invalid_uuid}
+    end
   end
 end
