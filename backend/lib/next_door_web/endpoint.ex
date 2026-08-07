@@ -15,7 +15,7 @@ defmodule NextDoorWeb.Endpoint do
 
   # WebSocket endpoint for order push notifications ("/socket?token=...")
   socket("/socket", NextDoorWeb.UserSocket,
-    websocket: [check_origin: ["http://localhost:3000", "http://127.0.0.1:3000"]],
+    websocket: [check_origin: {:config, :next_door, :cors_origins}],
     longpoll: false
   )
 

@@ -22,6 +22,8 @@ config :next_door, NextDoorWeb.Endpoint,
   pubsub_server: NextDoor.PubSub,
   live_view: [signing_salt: "3auNqBwi"]
 
+config :next_door, :cors_origins, ["http://localhost:3000", "http://127.0.0.1:3000"]
+
 # config :next_door, :phoenix_swagger,
 #        json_library: Jason,
 #        swagger_files: %{

@@ -20,6 +20,13 @@ if System.get_env("PHX_SERVER") do
   config :next_door, NextDoorWeb.Endpoint, server: true
 end
 
+cors_origins =
+  System.get_env("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+  |> String.split(",")
+  |> Enum.map(&String.trim/1)
+
+config :next_door, :cors_origins, cors_origins
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
