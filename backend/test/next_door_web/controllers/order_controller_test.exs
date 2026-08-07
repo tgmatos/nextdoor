@@ -291,7 +291,7 @@ defmodule NextDoorWeb.OrderControllerTest do
           after: "ROTA"
         })
 
-      assert json_response(conn, 422)["error"] == "Invalid status transition"
+      assert json_response(conn, 422)["errors"]["detail"] == "Invalid status transition"
     end
 
     test "returns 422 when the current status does not match", %{conn: conn, order: order} do
@@ -301,7 +301,7 @@ defmodule NextDoorWeb.OrderControllerTest do
           after: "ROTA"
         })
 
-      assert json_response(conn, 422)["error"] == "Invalid status transition"
+      assert json_response(conn, 422)["errors"]["detail"] == "Invalid status transition"
     end
 
     test "returns 404 for a missing order", %{conn: conn} do
@@ -311,7 +311,7 @@ defmodule NextDoorWeb.OrderControllerTest do
           after: "ACEITO"
         })
 
-      assert json_response(conn, 404)["error"] == "Order not found"
+      assert json_response(conn, 404)["errors"]["detail"] == "Order not found"
     end
 
     test "returns 400 for a malformed order id", %{conn: conn} do
@@ -321,7 +321,7 @@ defmodule NextDoorWeb.OrderControllerTest do
           after: "ACEITO"
         })
 
-      assert json_response(conn, 400)["error"] == "Invalid order id"
+      assert json_response(conn, 400)["errors"]["detail"] == "Invalid order id"
     end
   end
 end

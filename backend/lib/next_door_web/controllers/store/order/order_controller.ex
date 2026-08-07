@@ -106,17 +106,17 @@ defmodule NextDoorWeb.OrderController do
       {:error, :invalid_transition} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{error: "Invalid status transition"})
+        |> json(%{errors: %{detail: "Invalid status transition"}})
 
       {:error, :not_found} ->
         conn
         |> put_status(:not_found)
-        |> json(%{error: "Order not found"})
+        |> json(%{errors: %{detail: "Order not found"}})
 
       {:error, :invalid_uuid} ->
         conn
         |> put_status(:bad_request)
-        |> json(%{error: "Invalid order id"})
+        |> json(%{errors: %{detail: "Invalid order id"}})
     end
   end
 
