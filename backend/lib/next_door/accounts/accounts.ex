@@ -3,6 +3,7 @@ defmodule NextDoor.Accounts do
   alias NextDoor.Repo
   alias Ecto.Multi
   import Ecto.Changeset
+  import NextDoor.RepoHelper
 
   def new_account(attr \\ %{}) do
     case Multi.new()
@@ -62,12 +63,5 @@ defmodule NextDoor.Accounts do
     |> foreign_key_constraint(:id, name: :store_owner_id_fkey)
     |> foreign_key_constraint(:id, name: :orders_account_id_fkey)
     |> foreign_key_constraint(:id, name: :account_address_account_id_fkey)
-  end
-
-  defp transact(multi, step) do
-    case Repo.transaction(multi) do
-      {:ok, changes} -> {:ok, Map.fetch!(changes, step)}
-      {:error, _step, reason, _changes} -> {:error, reason}
-    end
   end
 end

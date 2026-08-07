@@ -3,6 +3,7 @@ defmodule NextDoor.Stores do
   alias NextDoor.Validators
   alias Ecto.Multi
   import Ecto.Query
+  import NextDoor.RepoHelper
 
   def create(attr \\ %{}) do
     Multi.new()
@@ -75,13 +76,6 @@ defmodule NextDoor.Stores do
           Cache.delete({Store, %{owner_id: owner_id}})
           {:ok, store}
         end
-    end
-  end
-
-  defp transact(multi, step) do
-    case Repo.transaction(multi) do
-      {:ok, changes} -> {:ok, Map.fetch!(changes, step)}
-      {:error, _step, reason, _changes} -> {:error, reason}
     end
   end
 end

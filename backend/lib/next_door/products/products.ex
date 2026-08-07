@@ -3,6 +3,7 @@ defmodule NextDoor.Products do
   alias NextDoor.Validators
   alias Ecto.Multi
   import Ecto.Query
+  import NextDoor.RepoHelper
 
   def create(owner_id, attr \\ %{}) do
     case Cache.get_by(NextDoor.Store, %{owner_id: owner_id}) do
@@ -89,13 +90,6 @@ defmodule NextDoor.Products do
     else
       nil -> {:error, :record_not_found}
       {:error, :invalid_uuid} -> {:error, :invalid_uuid}
-    end
-  end
-
-  defp transact(multi, step) do
-    case Repo.transaction(multi) do
-      {:ok, changes} -> {:ok, Map.fetch!(changes, step)}
-      {:error, _step, reason, _changes} -> {:error, reason}
     end
   end
 end

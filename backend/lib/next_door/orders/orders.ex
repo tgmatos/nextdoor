@@ -3,6 +3,7 @@ defmodule NextDoor.Orders do
   alias NextDoor.Validators
   alias Ecto.Multi
   import Ecto.Query
+  import NextDoor.RepoHelper
 
   @valid_transitions %{
     "ESPERANDO" => ["ACEITO", "RECUSADO"],
@@ -300,12 +301,5 @@ defmodule NextDoor.Orders do
 
   defp valid_transition?(status_before, status_after) do
     status_after in Map.get(@valid_transitions, status_before, [])
-  end
-
-  defp transact(multi, step) do
-    case Repo.transaction(multi) do
-      {:ok, changes} -> {:ok, Map.fetch!(changes, step)}
-      {:error, _step, reason, _changes} -> {:error, reason}
-    end
   end
 end

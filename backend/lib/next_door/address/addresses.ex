@@ -3,6 +3,7 @@ defmodule NextDoor.Addresses do
   alias NextDoor.Validators
   alias Ecto.Multi
   import Ecto.Query
+  import NextDoor.RepoHelper
 
   def new_address(params) do
     Multi.new()
@@ -71,12 +72,5 @@ defmodule NextDoor.Addresses do
     ])
 
     {:ok, address}
-  end
-
-  defp transact(multi, step) do
-    case Repo.transaction(multi) do
-      {:ok, changes} -> {:ok, Map.fetch!(changes, step)}
-      {:error, _step, reason, _changes} -> {:error, reason}
-    end
   end
 end
