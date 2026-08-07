@@ -137,6 +137,15 @@ data class OrdersResponse(val orders: List<OrderDto>)
 @Serializable
 data class OrderResponse(val order: OrderDto)
 
+/** Payload of the `order_updated` websocket push on the `account:order:<id>` channel. */
+@Serializable
+data class OrderUpdateDto(
+    val id: String,
+    val total: String,
+    @SerialName("status_order") val statusOrder: String,
+    @SerialName("payment_method") val paymentMethod: String
+)
+
 @Serializable
 data class CreateOrderProduct(
     val product: String,

@@ -6,6 +6,7 @@ import com.nextdoor.app.data.dto.OrderDto
 import com.nextdoor.app.data.infra.ApiResult
 import com.nextdoor.app.data.repository.AccountRepository
 import com.nextdoor.app.data.repository.CartRepository
+import com.nextdoor.app.data.repository.OrderUpdatesRepository
 import com.nextdoor.app.ui.components.ToastController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -27,6 +28,7 @@ data class OrdersUiState(
 @HiltViewModel
 class OrdersViewModel @Inject constructor(
     private val accountRepository: AccountRepository,
+    private val orderUpdatesRepository: OrderUpdatesRepository,
     cartRepository: CartRepository
 ) : ViewModel() {
 
@@ -39,6 +41,29 @@ class OrdersViewModel @Inject constructor(
 
     init {
         load()
+        observeOrderUpdates()
+    }
+
+    /** Patches the matching order in the list whenever the websocket announces a status change. */
+    private fun observeOrderUpdates() {
+        viewModelScope.launch {
+            orderUpdatesRepository.updates.collect { update ->
+                _uiState.update { state ->
+                    val orders = state.orders.map { order ->
+                        if (order.id == update.id) {
+                            order.copy(
+                                statusOrder = update.statusOrder,
+                                total = update.total,
+                                paymentMethod = update.paymentMethod
+                            )
+                        } else {
+                            order
+                        }
+                    }
+                    state.copy(orders = orders)
+                }
+            }
+        }
     }
 
     fun load() {

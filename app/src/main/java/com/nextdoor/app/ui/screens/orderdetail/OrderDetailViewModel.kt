@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.nextdoor.app.data.dto.OrderDto
 import com.nextdoor.app.data.infra.ApiResult
 import com.nextdoor.app.data.repository.AccountRepository
+import com.nextdoor.app.data.repository.OrderUpdatesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,11 +23,34 @@ data class OrderDetailUiState(
 
 @HiltViewModel
 class OrderDetailViewModel @Inject constructor(
-    private val accountRepository: AccountRepository
+    private val accountRepository: AccountRepository,
+    private val orderUpdatesRepository: OrderUpdatesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OrderDetailUiState())
     val uiState: StateFlow<OrderDetailUiState> = _uiState.asStateFlow()
+
+    init {
+        // Patch the open order whenever the websocket announces a status change for it.
+        viewModelScope.launch {
+            orderUpdatesRepository.updates.collect { update ->
+                _uiState.update { state ->
+                    val order = state.order
+                    if (order != null && order.id == update.id) {
+                        state.copy(
+                            order = order.copy(
+                                statusOrder = update.statusOrder,
+                                total = update.total,
+                                paymentMethod = update.paymentMethod
+                            )
+                        )
+                    } else {
+                        state
+                    }
+                }
+            }
+        }
+    }
 
     fun load(orderId: String) {
         // Ignore re-loads for the same id.
