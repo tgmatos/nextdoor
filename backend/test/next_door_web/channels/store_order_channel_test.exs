@@ -31,7 +31,7 @@ defmodule NextDoorWeb.StoreOrderChannelTest do
     end
 
     test "invalid token is rejected at connect" do
-      assert :error = connect(UserSocket, %{token: "invalid-token"})
+      assert {:error, :unauthorized} = connect(UserSocket, %{token: "invalid-token"})
     end
   end
 

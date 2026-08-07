@@ -12,7 +12,7 @@ defmodule NextDoorWeb.UserSocket do
         {:ok, assign(socket, :account_id, claims["sub"])}
 
       {:error, _} ->
-        :error
+        {:error, :unauthorized}
     end
   end
 
