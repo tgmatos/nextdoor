@@ -147,7 +147,7 @@ class OrderUpdatesRepository @Inject constructor(
         val wsBase = BuildConfig.BASE_URL
             .replaceFirst("http://", "ws://")
             .replaceFirst("https://", "wss://")
-        return "${wsBase.trimEnd('/')}/socket/websocket?token=$token"
+        return "${wsBase.trimEnd('/')}/socket/websocket?vsn=2.0.0&token=$token"
     }
 
     private fun decodeSub(token: String): String? {
