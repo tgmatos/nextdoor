@@ -232,6 +232,26 @@ defmodule NextDoor.ContextsTest do
                {:error, :record_not_found}
     end
 
+    test "out-of-stock product is hidden from public list but visible to owner", %{
+      owner: owner,
+      store: store
+    } do
+      {:ok, product} =
+        Products.create(owner.id, %{
+          name: "Out of stock",
+          description: "desc",
+          price: "10.00",
+          image: "fake image",
+          inventory: %{quantity: 0}
+        })
+
+      {:ok, %{entries: products}} = Products.list_products(store.id)
+      refute Enum.any?(products, &(&1.id == product.id))
+
+      {:ok, %{entries: products}} = Products.index(owner.id)
+      assert Enum.any?(products, &(&1.id == product.id))
+    end
+
     test "ordering a deleted product returns product_not_found", %{
       owner: owner,
       store: store,
@@ -302,6 +322,48 @@ defmodule NextDoor.ContextsTest do
 
       assert NextDoor.Repo.aggregate(NextDoor.Order, :count) == orders_before
       assert NextDoor.Repo.aggregate(NextDoor.OrderProduct, :count) == order_products_before
+    end
+
+    test "concurrent orders for the last unit of stock succeed once and fail cleanly", %{
+      store: store,
+      customer: customer
+    } do
+      ensure_address(customer)
+
+      {:ok, scarce_product} =
+        Products.create(store.owner_id, %{
+          name: "Ctx Scarce #{System.unique_integer([:positive])}",
+          description: "desc",
+          price: Decimal.new("10.00"),
+          image: "img",
+          inventory: %{quantity: 1}
+        })
+
+      orders_before = NextDoor.Repo.aggregate(NextDoor.Order, :count)
+      order_products_before = NextDoor.Repo.aggregate(NextDoor.OrderProduct, :count)
+
+      results =
+        1..2
+        |> Enum.map(fn _ ->
+          Task.async(fn ->
+            Orders.create_order(%{
+              store_id: store.id,
+              customer_id: customer.id,
+              products: [%{"product" => scarce_product.id, "quantity" => 1}],
+              payment_method: "PIX"
+            })
+          end)
+        end)
+        |> Enum.map(&Task.await/1)
+
+      assert Enum.count(results, &match?({:ok, _}, &1)) == 1
+      assert Enum.count(results, &match?({:error, :insufficient_stock}, &1)) == 1
+
+      assert NextDoor.Repo.aggregate(NextDoor.Order, :count) == orders_before + 1
+      assert NextDoor.Repo.aggregate(NextDoor.OrderProduct, :count) == order_products_before + 1
+
+      inventory = NextDoor.Repo.get_by(NextDoor.Inventory, product_id: scarce_product.id)
+      assert inventory.quantity == 0
     end
 
     test "new_address links the address to the account", %{customer: customer} do

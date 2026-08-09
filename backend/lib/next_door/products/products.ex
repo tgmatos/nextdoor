@@ -1,5 +1,5 @@
 defmodule NextDoor.Products do
-  alias NextDoor.{Store, Repo, Cache, Product}
+  alias NextDoor.{Store, Repo, Cache, Product, Inventory}
   alias NextDoor.Validators
   alias NextDoor.Pagination
   alias Ecto.Multi
@@ -29,7 +29,9 @@ defmodule NextDoor.Products do
         from(p in Product,
           join: s in Store,
           on: s.id == p.store_id,
-          where: s.id == ^store_id and p.active and s.active,
+          join: i in Inventory,
+          on: i.product_id == p.id,
+          where: s.id == ^store_id and p.active and s.active and i.quantity > 0,
           select: p
         )
 

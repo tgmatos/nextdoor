@@ -88,6 +88,18 @@ defmodule NextDoorWeb.ProductControllerTest do
       assert Enum.any?(entries, &(&1["id"] == product.id))
     end
 
+    test "still lists out-of-stock products for the owner", %{conn: conn} do
+      account = account_fixture()
+      store = store_fixture(account)
+      product = product_fixture(store, %{quantity: 0})
+      conn = auth_conn(conn, account)
+
+      conn = get(conn, ~p"/api/store/product")
+
+      assert %{"entries" => entries} = json_response(conn, 200)
+      assert Enum.any?(entries, &(&1["id"] == product.id))
+    end
+
     test "returns an empty list when the owner has no products", %{conn: conn} do
       account = account_fixture()
       store_fixture(account)
@@ -109,6 +121,17 @@ defmodule NextDoorWeb.ProductControllerTest do
 
       assert %{"entries" => entries} = json_response(conn, 200)
       assert Enum.any?(entries, &(&1["id"] == product.id))
+    end
+
+    test "does not list products that are out of stock", %{conn: conn} do
+      account = account_fixture()
+      store = store_fixture(account)
+      product = product_fixture(store, %{quantity: 0})
+
+      conn = get(conn, ~p"/api/stores/#{store.id}/product")
+
+      assert %{"entries" => entries} = json_response(conn, 200)
+      refute Enum.any?(entries, &(&1["id"] == product.id))
     end
 
     test "returns an empty list when the store has no products", %{conn: conn} do
